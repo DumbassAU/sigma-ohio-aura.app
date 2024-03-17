@@ -34,51 +34,101 @@
         <Image Source="/Assets/background.png"
                IsHitTestVisible="False"
                Stretch="UniformToFill"
-               Opacity=".7">
+               Opacity=".5">
             <Image.Effect>
                 <BlurEffect Radius="20"></BlurEffect>
             </Image.Effect>
         </Image>
         
         
-        <Panel IsHitTestVisible="False"
-               VerticalAlignment="Bottom"
-               Height="400">
+        <Panel VerticalAlignment="Bottom"
+               Height="300">
             <Panel.Background>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
                     <GradientStop Offset="0" Color="#00111111" />
-                    <GradientStop Offset=".8" Color="#111" />
+                    <GradientStop Offset=".65" Color="#111" />
                     <GradientStop Offset="1" Color="#111" />
                 </LinearGradientBrush>
                 
             </Panel.Background>
                 
-            <Button HorizontalAlignment="Left"
-                    VerticalAlignment="Bottom"
-                    Margin="20">
-                <TextBlock 
-                    FontSize="30"
-                    FontWeight="UltraLight">
-                    Install
+            <Grid
+                Margin="0,0,0,20"
+                VerticalAlignment="Bottom" 
+                ColumnDefinitions="Auto,Auto">
+                <Button Grid.Column="0"
+                        IsEnabled="False"
+                        Name="InstallButton"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Margin="20">
+                    <TextBlock 
+                        Name="InstallText"
+                        FontSize="30"
+                        FontWeight="UltraLight">
+                        Install
+                    </TextBlock>
+                </Button>
+            
+                
+                <TextBlock Grid.Column="1"
+                           Name="ErrorText"
+                           VerticalAlignment="Center" 
+                           FontSize="20"
+                           FontWeight="UltraLight"
+                           Foreground="#FFBB00">
+                    <Image Source="/Assets/warning.png" Width="25"/>
+                    Could not find Among Us Path
                 </TextBlock>
-            </Button>
+            </Grid>
+            <ProgressBar 
+                Name="ProgressBar"
+                VerticalAlignment="Bottom" 
+                Height="20"
+                Value="50"
+                ShowProgressText="True"
+                ProgressTextFormat="Downloading BepInEx..."
+                />
         </Panel>
         
-        <TextBlock Margin="40"
-                   HorizontalAlignment="Center"
-                   FontSize="90"
-                   FontWeight="UltraLight"
-                   LetterSpacing="10"
-                   Opacity=".9"
-                   Foreground="#DDD"
-                   Text="Launchpad">
-            <TextBlock.Effect>
-                <DropShadowDirectionEffect 
-                    BlurRadius="20" 
-                    ShadowDepth="0"/>
-            </TextBlock.Effect>
+        <Grid VerticalAlignment="Top"
+              Margin="40"
+              RowDefinitions="Auto, Auto">
+            <TextBlock Grid.Row="0"
+                       HorizontalAlignment="Center"
+                       FontSize="90"
+                       FontWeight="UltraLight"
+                       LetterSpacing="5"
+                       Opacity=".9"
+                       Foreground="#DDD"
+                       Text="Launchpad">
+                <TextBlock.Effect>
+                    <DropShadowDirectionEffect 
+                        BlurRadius="20" 
+                        ShadowDepth="0"/>
+                </TextBlock.Effect>
             
-        </TextBlock>
+            </TextBlock>
+            
+            <TextBlock 
+                Grid.Row="1" 
+                Margin="0,20,0,0"
+                HorizontalAlignment="Center"
+                FontSize="25"
+                FontWeight="UltraLight"
+                LetterSpacing="2"
+                Opacity=".9"
+                Foreground="#DDD"
+                Text="Beta 5 | dsc.gg/allofus">
+                <TextBlock.Effect>
+                    <DropShadowDirectionEffect 
+                        BlurRadius="10" 
+                        ShadowDepth="0"/>
+                </TextBlock.Effect>
+            </TextBlock>
+        </Grid>
+        
+        
     </Panel>
     
 </Window>
