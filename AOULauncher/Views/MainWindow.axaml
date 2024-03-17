@@ -3,18 +3,82 @@
         xmlns:vm="using:AOULauncher.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="400"
         x:Class="AOULauncher.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="AOULauncher">
-
+        Title="AOULauncher"
+        TransparencyLevelHint="AcrylicBlur"
+        ExtendClientAreaToDecorationsHint="True"
+        Width="700"
+        Height="400"
+        CanResize="False">
+    
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-
+    <Panel>
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="Black"
+                    TintOpacity="1"
+                    MaterialOpacity="0" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        
+        <Image Source="/Assets/background.png"
+               IsHitTestVisible="False"
+               Stretch="UniformToFill"
+               Opacity=".7">
+            <Image.Effect>
+                <BlurEffect Radius="20"></BlurEffect>
+            </Image.Effect>
+        </Image>
+        
+        
+        <Panel IsHitTestVisible="False"
+               VerticalAlignment="Bottom"
+               Height="400">
+            <Panel.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="#00111111" />
+                    <GradientStop Offset=".8" Color="#111" />
+                    <GradientStop Offset="1" Color="#111" />
+                </LinearGradientBrush>
+                
+            </Panel.Background>
+                
+            <Button HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="20">
+                <TextBlock 
+                    FontSize="30"
+                    FontWeight="UltraLight">
+                    Install
+                </TextBlock>
+            </Button>
+        </Panel>
+        
+        <TextBlock Margin="40"
+                   HorizontalAlignment="Center"
+                   FontSize="90"
+                   FontWeight="UltraLight"
+                   LetterSpacing="10"
+                   Opacity=".9"
+                   Foreground="#DDD"
+                   Text="Launchpad">
+            <TextBlock.Effect>
+                <DropShadowDirectionEffect 
+                    BlurRadius="20" 
+                    ShadowDepth="0"/>
+            </TextBlock.Effect>
+            
+        </TextBlock>
+    </Panel>
+    
 </Window>
