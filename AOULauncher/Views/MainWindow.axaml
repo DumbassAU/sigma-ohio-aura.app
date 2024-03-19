@@ -31,7 +31,8 @@
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
         
-        <Image Source="/Assets/background.png"
+        <Image Name="Background"
+               Source="/Assets/background.png"
                IsHitTestVisible="False"
                Stretch="UniformToFill"
                Opacity=".5">
@@ -46,22 +47,26 @@
             <Panel.Background>
                 <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
                     <GradientStop Offset="0" Color="#00111111" />
-                    <GradientStop Offset=".65" Color="#111" />
-                    <GradientStop Offset="1" Color="#111" />
+                    <GradientStop Offset=".65" Color="#EE111111"  />
+                    <GradientStop Offset="1" Color="#111111" />
                 </LinearGradientBrush>
                 
             </Panel.Background>
                 
             <Grid
-                Margin="0,0,0,20"
+                Margin="0,0,0,35"
                 VerticalAlignment="Bottom" 
+                HorizontalAlignment="Center"
+                RowDefinitions="Auto,Auto"
                 ColumnDefinitions="Auto,Auto">
-                <Button Grid.Column="0"
+                <Button Grid.ColumnSpan="2" Grid.Row="0" Grid.Column="0"
+                        Background="#333"
                         IsEnabled="False"
                         Name="InstallButton"
-                        HorizontalAlignment="Left"
+                        HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        Margin="20">
+                        Margin="10"
+                        Click="InstallClickHandler">
                     <TextBlock 
                         Name="InstallText"
                         FontSize="30"
@@ -70,25 +75,31 @@
                     </TextBlock>
                 </Button>
             
+                <Image Grid.Row="1" Grid.Column="0"
+                       Name="InfoIcon"
+                       Source="/Assets/warning.png" 
+                       Width="30"/>
                 
-                <TextBlock Grid.Column="1"
-                           Name="ErrorText"
+                <TextBlock Grid.Row="1" Grid.Column="1"
+                           Name="InfoText"
                            VerticalAlignment="Center" 
-                           FontSize="20"
-                           FontWeight="UltraLight"
-                           Foreground="#FFBB00">
-                    <Image Source="/Assets/warning.png" Width="25"/>
-                    Could not find Among Us Path
-                </TextBlock>
+                           FontSize="15"
+                           FontWeight="Light"
+                           Foreground="#FFBB00">Could not find Among Us Path. Run the game and press refresh</TextBlock>
             </Grid>
             <ProgressBar 
                 Name="ProgressBar"
                 VerticalAlignment="Bottom" 
                 Height="20"
-                Value="50"
                 ShowProgressText="True"
-                ProgressTextFormat="Downloading BepInEx..."
-                />
+                ProgressTextFormat="Loading..."
+                >
+                <ProgressBar.Transitions>
+                    <Transitions>
+                        <DoubleTransition Easing="CubicEaseInOut" Property="Value" Duration="0:0:0.5"/>
+                    </Transitions>
+                </ProgressBar.Transitions>
+            </ProgressBar>
         </Panel>
         
         <Grid VerticalAlignment="Top"
