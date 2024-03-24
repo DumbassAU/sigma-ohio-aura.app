@@ -37,7 +37,7 @@
                Stretch="UniformToFill"
                Opacity=".5">
             <Image.Effect>
-                <BlurEffect Radius="20"></BlurEffect>
+                <BlurEffect Radius="15"></BlurEffect>
             </Image.Effect>
         </Image>
         
@@ -75,17 +75,29 @@
                     </TextBlock>
                 </Button>
             
-                <Image Grid.Row="1" Grid.Column="0"
-                       Name="InfoIcon"
-                       Source="/Assets/warning.png" 
-                       Width="30"/>
+                <Button Name="InfoButton"
+                        Grid.Row="1" Grid.Column="1"
+                        VerticalAlignment="Center" 
+                        Click="OpenDirectoryPicker"
+                        Background="#444">
+                    <Grid ColumnDefinitions="Auto,Auto">
+                        <Image Grid.Column="0"
+                               Name="InfoIcon"
+                               Source="/Assets/warning.png" 
+                               Width="50"
+                               Margin="0,0,10,0"/>
+                        <TextBlock Grid.Column="1"
+                            Name="InfoText"
+                            FontSize="15"
+                            VerticalAlignment="Center"
+                            FontWeight="Light"
+                            Foreground="#FFBB00">
+                            There was an error loading the launcher
+                        </TextBlock>
+                    </Grid>
+                    
+                </Button>
                 
-                <TextBlock Grid.Row="1" Grid.Column="1"
-                           Name="InfoText"
-                           VerticalAlignment="Center" 
-                           FontSize="15"
-                           FontWeight="Light"
-                           Foreground="#FFBB00">Could not find Among Us Path. Run the game and press refresh</TextBlock>
             </Grid>
             <ProgressBar 
                 Name="ProgressBar"
@@ -96,7 +108,10 @@
                 >
                 <ProgressBar.Transitions>
                     <Transitions>
-                        <DoubleTransition Easing="CubicEaseInOut" Property="Value" Duration="0:0:0.5"/>
+                        <DoubleTransition 
+                            Easing="CubicEaseInOut" 
+                            Property="Value"
+                            Duration="0:0:0.1"/>
                     </Transitions>
                 </ProgressBar.Transitions>
             </ProgressBar>
@@ -129,8 +144,13 @@
                 FontWeight="UltraLight"
                 LetterSpacing="2"
                 Opacity=".9"
-                Foreground="#DDD"
-                Text="Beta 5 | dsc.gg/allofus">
+                Foreground="#DDD">
+                Beta 5 |
+                <Button Padding="0" 
+                        Background="Transparent"
+                        Foreground="#7289da"
+                        FontWeight="300"
+                        Click="Button_OnClick">dsc.gg/allofus</Button>
                 <TextBlock.Effect>
                     <DropShadowDirectionEffect 
                         BlurRadius="10" 
