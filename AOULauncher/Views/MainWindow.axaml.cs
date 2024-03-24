@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Handlers;
@@ -23,14 +22,12 @@ namespace AOULauncher.Views;
 
 public partial class MainWindow : Window
 {
-    private const string BepInBase = "https://builds.bepinex.dev/projects/bepinex_be/";
     private string _amongUsPath = "";
     private ButtonState _buttonState;
     private LauncherData _launcherData;
     private readonly HttpClient _httpClient;
-    private bool _showProgress = false;
-    
-    public ButtonState ButtonState
+
+    private ButtonState ButtonState
     {
         get => _buttonState;
         set
@@ -43,9 +40,9 @@ public partial class MainWindow : Window
                     InfoIcon.IsVisible = true;
                     InfoText.Foreground = Brush.Parse("#FFBB00");
                     InfoText.Text = "";
-                    InfoText.Inlines.Add("Among Us could not be found. Run the game and \npress refresh or click ");
-                    InfoText.Inlines.Add(new Run("here") {FontWeight = FontWeight.SemiBold});
-                    InfoText.Inlines.Add(" to choose manually");
+                    InfoText.Inlines?.Add("Among Us could not be found. Run the game and \npress refresh or click ");
+                    InfoText.Inlines?.Add(new Run("here") {FontWeight = FontWeight.SemiBold});
+                    InfoText.Inlines?.Add(" to choose manually");
                     InfoButton.Background = Brush.Parse("#444");
                     break;
                 
@@ -100,9 +97,9 @@ public partial class MainWindow : Window
         await using var fs = new FileStream(Path.GetFullPath(name,directory), FileMode.OpenOrCreate);
         await s.CopyToAsync(fs);
     }
-    
-    
-    public async Task DownloadData()
+
+
+    private async Task DownloadData()
     {
         _launcherData = DownloadJson<LauncherData>("https://www.xtracube.dev/assets/js/launcherData.json");
 
@@ -110,7 +107,7 @@ public partial class MainWindow : Window
         Dispatcher.UIThread.Post(LocateAmongUs);
     }
 
-    public void LocateAmongUs()
+    private void LocateAmongUs()
     {
         var processes = Process.GetProcessesByName("Among Us");
         if (processes.Length < 1)
@@ -127,8 +124,8 @@ public partial class MainWindow : Window
         }
         
     }
-    
-    public void UpdatePathFromRegistry()
+
+    private void UpdatePathFromRegistry()
     {
         var registryEntry = Registry.GetValue(@"HKEY_CLASSES_ROOT\amongus\DefaultIcon", "", null);
 
@@ -145,7 +142,7 @@ public partial class MainWindow : Window
         }
     }
 
-    public void UpdateFromPath(string? path)
+    private void UpdateFromPath(string? path)
     {
         if (path != null && Path.Exists(Path.GetFullPath(Path.Combine(path,"Among Us.exe"))))
         {
@@ -153,13 +150,12 @@ public partial class MainWindow : Window
             LoadAmongUsPath();
             return;
         }
-        Console.Out.WriteLine(Path.GetFullPath(Path.Combine(path, "Among Us.exe")));
         ButtonState = ButtonState.Refresh;
     }
 
     
     // have to use GetFullPath because path.combine is weird and uses wrong slashes sometimes
-    public void LoadAmongUsPath()
+    private void LoadAmongUsPath()
     {
         Console.Out.WriteLine(Path.GetFullPath("Among Us.exe",_amongUsPath));
 
@@ -167,7 +163,7 @@ public partial class MainWindow : Window
 
         if (!Path.Exists(Path.GetFullPath("Among Us.exe",_amongUsPath)))
         {
-            Console.Out.WriteLine("no amogus detected");
+            Console.Out.WriteLine("no among us detected");
             ButtonState = ButtonState.Refresh;
             return;
         }
@@ -264,7 +260,7 @@ public partial class MainWindow : Window
         }
 
         using var archive = ZipFile.Read(path);
-        archive.ExtractProgress += (sender, args) =>
+        archive.ExtractProgress += (_, args) =>
         {
             if (args.EntriesTotal != 0)
             {
@@ -326,7 +322,7 @@ public partial class MainWindow : Window
         return string.Concat(array.Select(x => x.ToString("x2")));
     }
 
-    private async void OpenDirectoryPicker(object? sender, RoutedEventArgs e)
+    private async void OpenDirectoryPicker(object? _, RoutedEventArgs e)
     {
         var picked = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
@@ -340,11 +336,14 @@ public partial class MainWindow : Window
 
     }
 
-    private async void Button_OnClick(object? sender, RoutedEventArgs e)
+    private async void DiscordLinkOnClick(object? _, RoutedEventArgs e)
     {
         var clipboard = GetTopLevel(this)?.Clipboard;
         var dataObject = new DataObject();
         dataObject.Set(DataFormats.Text, "https://dsc.gg/allofus");
-        await clipboard.SetDataObjectAsync(dataObject);
+        if (clipboard is not null)
+        {
+            await clipboard.SetDataObjectAsync(dataObject);
+        }
     }
 }

@@ -150,7 +150,7 @@
                         Background="Transparent"
                         Foreground="#7289da"
                         FontWeight="300"
-                        Click="Button_OnClick">dsc.gg/allofus</Button>
+                        Click="DiscordLinkOnClick">dsc.gg/allofus</Button>
                 <TextBlock.Effect>
                     <DropShadowDirectionEffect 
                         BlurRadius="10" 
