@@ -9,6 +9,7 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="AOULauncher"
         TransparencyLevelHint="AcrylicBlur"
+        Background="Transparent"
         ExtendClientAreaToDecorationsHint="True"
         Width="700"
         Height="400"
@@ -27,15 +28,15 @@
                     BackgroundSource="Digger"
                     TintColor="Black"
                     TintOpacity="1"
-                    MaterialOpacity="0" />
+                    PlatformTransparencyCompensationLevel="1"
+                    MaterialOpacity="0"/>
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
-        
         <Image Name="Background"
                Source="/Assets/background.png"
                IsHitTestVisible="False"
                Stretch="UniformToFill"
-               Opacity=".5">
+               Opacity="0.5">
             <Image.Effect>
                 <BlurEffect Radius="15"></BlurEffect>
             </Image.Effect>

@@ -22,15 +22,16 @@ namespace AOULauncher.Views;
 
 public partial class MainWindow : Window
 {
-    private string _amongUsPath = "";
+    public string AmongUsPath = "";
+    public readonly string ConfigPath = Path.GetFullPath("launcherConfig.json", Directory.GetCurrentDirectory());
     private ButtonState _buttonState;
     private LauncherData _launcherData;
     private readonly HttpClient _httpClient;
 
-    private ButtonState ButtonState
+    public ButtonState ButtonState
     {
         get => _buttonState;
-        set
+        private set
         {
             _buttonState = value;
 
@@ -53,7 +54,7 @@ public partial class MainWindow : Window
                 default:
                     InfoIcon.IsVisible = false;
                     InfoText.Foreground = Brush.Parse("#555");
-                    InfoText.Text = _amongUsPath;
+                    InfoText.Text = AmongUsPath;
                     InfoButton.Background = Brushes.Transparent;
                     break;
             }
@@ -67,6 +68,14 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        
+        if (Path.Exists(ConfigPath))
+        {
+            var cfg = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(ConfigPath));
+            AmongUsPath = cfg.AmongUsPath;
+        }
+        
+        
         var handler = new HttpClientHandler { AllowAutoRedirect = true };
         var ph = new ProgressMessageHandler(handler);
 
@@ -83,7 +92,14 @@ public partial class MainWindow : Window
         Task.Run(DownloadData);
     }
 
-
+    private void KillAmongUs()
+    {
+        foreach (var process in Process.GetProcessesByName("Among Us"))
+        {
+            process.Kill();
+        }
+    }
+    
     private T? DownloadJson<T>(string url)
     {
         var response = _httpClient.Send(new HttpRequestMessage(HttpMethod.Get, url));
@@ -104,9 +120,19 @@ public partial class MainWindow : Window
         _launcherData = DownloadJson<LauncherData>("https://www.xtracube.dev/assets/js/launcherData.json");
 
         await Console.Out.WriteLineAsync(_launcherData.ToString());
-        Dispatcher.UIThread.Post(LocateAmongUs);
+        
+        Dispatcher.UIThread.Post(AfterData);
     }
 
+    private void AfterData()
+    {
+        if (!UpdateFromPath(AmongUsPath))
+        {
+            LocateAmongUs();
+        }
+    }
+    
+    
     private void LocateAmongUs()
     {
         var processes = Process.GetProcessesByName("Among Us");
@@ -117,10 +143,7 @@ public partial class MainWindow : Window
         else
         {
             UpdateFromPath(Path.GetDirectoryName(processes.First().GetMainModuleFileName()));
-            foreach (var process in processes)
-            {
-                process.Close();
-            }
+            KillAmongUs();
         }
         
     }
@@ -142,35 +165,32 @@ public partial class MainWindow : Window
         }
     }
 
-    private void UpdateFromPath(string? path)
+    private bool UpdateFromPath(string? path)
     {
-        if (path != null && Path.Exists(Path.GetFullPath(Path.Combine(path,"Among Us.exe"))))
+        if (path != null && Path.Exists(path) && Path.Exists(Path.GetFullPath("Among Us.exe",path)))
         {
-            _amongUsPath = path;
+            AmongUsPath = path;
             LoadAmongUsPath();
-            return;
+            return true;
         }
         ButtonState = ButtonState.Refresh;
+        return false;
     }
 
     
     // have to use GetFullPath because path.combine is weird and uses wrong slashes sometimes
     private void LoadAmongUsPath()
     {
-        Console.Out.WriteLine(Path.GetFullPath("Among Us.exe",_amongUsPath));
+        KillAmongUs();
+        Console.Out.WriteLine(Path.GetFullPath("Among Us.exe",AmongUsPath));
 
-        var bepInPluginPath = Path.GetFullPath(Path.Combine(_amongUsPath, "BepInEx", "plugins"));
+        var bepInPluginPath = Path.GetFullPath(Path.Combine(AmongUsPath, "BepInEx", "plugins"));
 
-        if (!Path.Exists(Path.GetFullPath("Among Us.exe",_amongUsPath)))
+        if (!Path.Exists(Path.GetFullPath("Among Us.exe",AmongUsPath)))
         {
             Console.Out.WriteLine("no among us detected");
             ButtonState = ButtonState.Refresh;
             return;
-        }
-
-        foreach (var process in Process.GetProcessesByName("Among Us"))
-        {
-            process.Kill();
         }
         
         if (Path.Exists(bepInPluginPath))
@@ -219,15 +239,16 @@ public partial class MainWindow : Window
         {
             case ButtonState.Update:
             case ButtonState.Install:
-                await DownloadZip("BepInEx.zip",_amongUsPath,_launcherData.BepInEx);
+                KillAmongUs();
+                await DownloadZip("BepInEx.zip",AmongUsPath,_launcherData.BepInEx);
                 await InstallPlugins();
-                await DownloadZip("ExtraData.zip",_amongUsPath,_launcherData.ExtraData);
+                await DownloadZip("ExtraData.zip",AmongUsPath,_launcherData.ExtraData);
                 LoadAmongUsPath();
                 break;
             
             case ButtonState.Launch:
-                await DownloadZip("BepInEx.zip",_amongUsPath,_launcherData.BepInEx);
-                await DownloadZip("ExtraData.zip",_amongUsPath,_launcherData.ExtraData);
+                await DownloadZip("BepInEx.zip",AmongUsPath,_launcherData.BepInEx);
+                await DownloadZip("ExtraData.zip",AmongUsPath,_launcherData.ExtraData);
                 Launch();
                 break;
             
@@ -267,13 +288,13 @@ public partial class MainWindow : Window
                 ProgressBar.Value = 100 * ((float)args.EntriesExtracted / args.EntriesTotal);
             }
         };
-        archive.ExtractAll(_amongUsPath, ExtractExistingFileAction.OverwriteSilently);
+        archive.ExtractAll(AmongUsPath, ExtractExistingFileAction.OverwriteSilently);
         ProgressBar.ProgressTextFormat = "Done";
     }
 
     private async Task InstallPlugins()
     {
-        var pluginPath = Path.GetFullPath(Path.Combine(_amongUsPath, "BepInEx", "plugins"));
+        var pluginPath = Path.GetFullPath(Path.Combine(AmongUsPath, "BepInEx", "plugins"));
         
         ProgressBar.ProgressTextFormat = "Installing mod...";
         ProgressBar.Value = 0;
@@ -293,9 +314,10 @@ public partial class MainWindow : Window
 
     private void Launch()
     {
+        KillAmongUs();
         ButtonState = ButtonState.Running;
-        
-        var process = Process.Start(Path.GetFullPath(Path.Combine(_amongUsPath,"Among Us.exe"))); 
+        ProgressBar.ProgressTextFormat = "Running...";
+        var process = Process.Start(Path.GetFullPath(Path.Combine(AmongUsPath,"Among Us.exe"))); 
         process.EnableRaisingEvents = true;
         process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(AmongUsOnExit);
     }
@@ -338,6 +360,7 @@ public partial class MainWindow : Window
 
     private async void DiscordLinkOnClick(object? _, RoutedEventArgs e)
     {
+        Process.Start(new ProcessStartInfo("https://dsc.gg/allofus") {UseShellExecute = true});
         var clipboard = GetTopLevel(this)?.Clipboard;
         var dataObject = new DataObject();
         dataObject.Set(DataFormats.Text, "https://dsc.gg/allofus");
