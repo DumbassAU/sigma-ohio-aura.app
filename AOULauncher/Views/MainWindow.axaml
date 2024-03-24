@@ -145,7 +145,7 @@
                 LetterSpacing="2"
                 Opacity=".9"
                 Foreground="#DDD">
-                Beta 5 |
+                Beta |
                 <Button Padding="0" 
                         Background="Transparent"
                         Foreground="#7289da"
