@@ -230,6 +230,8 @@ public partial class MainWindow : Window
                 break;
             
             case ButtonState.Launch:
+                await DownloadZip("BepInEx.zip",_amongUsPath,_launcherData.BepInEx);
+                await DownloadZip("ExtraData.zip",_amongUsPath,_launcherData.ExtraData);
                 Launch();
                 break;
             
