@@ -70,13 +70,13 @@ public partial class MainWindow : Window
         DownloadData();
     }
     
-    public async Task DownloadData()
+    public void DownloadData()
     {
-        var response = await _httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, "https://www.xtracube.dev/assets/js/launcherData.json"));
-        using var reader = new StreamReader(await response.Content.ReadAsStreamAsync());
-        _launcherData = JsonConvert.DeserializeObject<LauncherData>(await reader.ReadToEndAsync())!;
-        
-        await Console.Out.WriteLineAsync(_launcherData.ToString());
+        var response = _httpClient.Send(new HttpRequestMessage(HttpMethod.Get, "https://www.xtracube.dev/assets/js/launcherData.json"));
+        using var reader = new StreamReader(response.Content.ReadAsStream());
+        _launcherData = JsonConvert.DeserializeObject<LauncherData>(reader.ReadToEnd())!;
+
+        Console.Out.WriteLine(_launcherData.ToString());
         Dispatcher.UIThread.Post(LocateAmongUs);
     }
 
@@ -127,23 +127,32 @@ public partial class MainWindow : Window
         Console.Out.WriteLine(Path.Combine(_amongUsPath,"Among Us.exe"));
 
         var bepInPluginPath = Path.Combine(_amongUsPath, "BepInEx", "plugins");
-        var reactorPath = Path.Combine(bepInPluginPath, "Reactor.dll");
-        var launchpadPath = Path.Combine(bepInPluginPath, "LaunchpadReloaded.dll");
         
         if (Path.Exists(bepInPluginPath))
         {
-            var reactorUpdated = IsPluginUpdated(reactorPath, _launcherData.ReactorHash, out var reactorPresent);
-            var launchpadUpdated = IsPluginUpdated(launchpadPath, _launcherData.LPDLLHash, out var lpPresent);
+            var filesPresent = true;
+            var updateRequired = false;
             
-            Console.WriteLine(reactorUpdated + " " + launchpadUpdated);
-            
-            if (reactorPresent && lpPresent)
+            foreach (var info in _launcherData.ModList)
             {
-                ButtonState = ButtonState.Launch;
-                if (!reactorUpdated || !launchpadUpdated)
+                var pluginPath = Path.Combine(bepInPluginPath, info.Name);
+
+                var updated = IsPluginUpdated(pluginPath, info.Hash, out var exists);
+                
+                if (!exists)
                 {
-                    ButtonState = ButtonState.Update;
+                    filesPresent = false;
                 }
+                
+                if (!updated)
+                {
+                    updateRequired = true;
+                }
+            }
+
+            if (filesPresent)
+            {
+                ButtonState = updateRequired ? ButtonState.Update : ButtonState.Launch;
             }
             else
             {
