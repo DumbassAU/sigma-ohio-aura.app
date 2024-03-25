@@ -200,7 +200,7 @@ public partial class MainWindow : Window
             
             foreach (var info in _launcherData.ModList)
             {
-                var pluginPath = Path.GetFullPath(Path.Combine(bepInPluginPath, info.Name));
+                var pluginPath = Path.GetFullPath(info.Name,bepInPluginPath);
 
                 var updated = IsPluginUpdated(pluginPath, info.Hash, out var exists);
                 
@@ -239,6 +239,7 @@ public partial class MainWindow : Window
         {
             case ButtonState.Update:
             case ButtonState.Install:
+                ButtonState = ButtonState.Loading;
                 KillAmongUs();
                 await DownloadZip("BepInEx.zip",AmongUsPath,_launcherData.BepInEx);
                 await InstallPlugins();
@@ -247,15 +248,18 @@ public partial class MainWindow : Window
                 break;
             
             case ButtonState.Launch:
+                ButtonState = ButtonState.Loading;
                 await DownloadZip("BepInEx.zip",AmongUsPath,_launcherData.BepInEx);
                 await DownloadZip("ExtraData.zip",AmongUsPath,_launcherData.ExtraData);
                 Launch();
                 break;
             
             case ButtonState.Refresh:
+                ButtonState = ButtonState.Loading;
                 LocateAmongUs();
                 break;
 
+            case ButtonState.Loading:
             case ButtonState.Running:
                 break;
 
@@ -306,6 +310,7 @@ public partial class MainWindow : Window
             {
                 continue;
             }
+            ProgressBar.ProgressTextFormat = $"Downloading {plugin.Name}...";
 
             await DownloadFile(plugin.Name, pluginPath, plugin.Download);
         }
@@ -317,7 +322,7 @@ public partial class MainWindow : Window
         KillAmongUs();
         ButtonState = ButtonState.Running;
         ProgressBar.ProgressTextFormat = "Running...";
-        var process = Process.Start(Path.GetFullPath(Path.Combine(AmongUsPath,"Among Us.exe"))); 
+        var process = Process.Start(Path.GetFullPath("Among Us.exe",AmongUsPath)); 
         process.EnableRaisingEvents = true;
         process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(AmongUsOnExit);
     }

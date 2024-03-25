@@ -6,5 +6,6 @@ public enum ButtonState
     Update,
     Launch,
     Refresh,
-    Running
+    Running,
+    Loading
 }
