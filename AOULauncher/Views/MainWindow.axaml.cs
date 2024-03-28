@@ -201,7 +201,7 @@ public partial class MainWindow : Window
             var gameHash = Utilities.FileToHash(gamePath.FullName);
             if (!hash.Hash.Equals(gameHash, StringComparison.OrdinalIgnoreCase))
             {
-                Directory.CreateDirectory(gamePath.Directory.FullName);
+                Directory.CreateDirectory(gamePath.Directory!.FullName);
                 File.Copy(Path.GetFullPath(hash.RelativePath, Constants.CachedModDirectory), gamePath.FullName, true);
             }
 
@@ -316,6 +316,9 @@ public partial class MainWindow : Window
         Utilities.RestoreBackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "config");
 
         WindowState = WindowState.Normal;
+        Topmost = true;
+        Topmost = false;
+        Activate();
         Show();
         
         ButtonState = ButtonState.Loading;
