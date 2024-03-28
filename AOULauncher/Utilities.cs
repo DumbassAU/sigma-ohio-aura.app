@@ -48,12 +48,18 @@ internal static class Utilities {
     {
         var source = new DirectoryInfo(Path.Combine(baseDirectory, folder));
         var backup = new DirectoryInfo(Path.Combine(baseDirectory, folder+"_bak"));
-        
-        if (backup.Exists)
+
+        if (!backup.Exists)
+        {
+            return;
+        }
+
+        if (source.Exists)
         {
             source.Delete(true);
-            backup.MoveTo(source.FullName);
         }
+        
+        backup.MoveTo(source.FullName);
     }
     
     
@@ -74,26 +80,18 @@ internal static class Utilities {
 
     public static async Task DownloadFile(this HttpClient httpClient, string name, string directory, string url)
     {
-        var stream = await httpClient.GetStreamAsync(url);
+        await using var stream = await httpClient.GetStreamAsync(url);
         await using var destination = new FileStream(Path.Combine(directory,name), FileMode.OpenOrCreate);
         await stream.CopyToAsync(destination);
     }
     
     public static async Task<ZipFile> DownloadZip(this HttpClient httpClient, string name, string directory, ModPackData.ZipData zipData)
     {
-        var dir = new DirectoryInfo(directory);
-        if (!dir.Exists)
-        {
-            Directory.CreateDirectory(directory);
-        }
+        Directory.CreateDirectory(directory);
         
         var file = new FileInfo(Path.Combine(directory, name));
 
-        if (file.Exists && FileToHash(file.FullName).Equals(zipData.Hash, StringComparison.OrdinalIgnoreCase))
-        {
-            await Console.Out.WriteLineAsync("exists");
-        }
-        else
+        if (!file.Exists || !FileToHash(file.FullName).Equals(zipData.Hash, StringComparison.OrdinalIgnoreCase))
         {
             await httpClient.DownloadFile(name, directory, zipData.Link);
         }
@@ -103,6 +101,7 @@ internal static class Utilities {
     
     public static string FileToHash(string path)
     {
+        if (!File.Exists(path)) return "";
         var array = SHA256.HashData(File.ReadAllBytes(path));
         return string.Concat(array.Select(x => x.ToString("x2")));
     }

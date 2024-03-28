@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -18,9 +19,10 @@ namespace AOULauncher.Views;
 
 public partial class MainWindow : Window
 {
-    private readonly HttpClient _httpClient;
     public LauncherConfig Config;
+    private readonly HttpClient _httpClient;
     private ButtonState _buttonState;
+    private List<FileHash>? _hashes;
 
     public ButtonState ButtonState
     {
@@ -47,7 +49,7 @@ public partial class MainWindow : Window
         {
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                ProgressBar.Value = args.ProgressPercentage;
+                UpdateProgress(args.ProgressPercentage);
             });
         };
         
@@ -58,11 +60,17 @@ public partial class MainWindow : Window
         t.GetAwaiter().OnCompleted(LoadAmongUsPath);
     }
 
+    private void UpdateProgress(int value)
+    {
+        ProgressBar.Value = value;
+    }
+    
     private async Task DownloadData()
     {
         try
         {
             Config.ModPackData = await _httpClient.DownloadJson<ModPackData>(Constants.ApiLocation);
+            _hashes = await _httpClient.DownloadJson<List<FileHash>>(Constants.HashLocation);
         }
         catch (Exception e)
         {
@@ -74,7 +82,6 @@ public partial class MainWindow : Window
             });
         }
     }
-    
     
     private void LoadAmongUsPath()
     {
@@ -99,7 +106,6 @@ public partial class MainWindow : Window
         ProgressBar.ProgressTextFormat = "";
 
         var bepInExPlugins = new DirectoryInfo(Path.Combine(Constants.CachedModDirectory,"BepInEx","plugins"));
-
         
         if (!bepInExPlugins.Exists)
         {
@@ -154,8 +160,6 @@ public partial class MainWindow : Window
             
             case ButtonState.Launch:
                 ButtonState = ButtonState.Loading;
-                await InstallMod();
-                
                 Launch();
                 break;
             
@@ -180,9 +184,34 @@ public partial class MainWindow : Window
         await InstallZip("BepInEx.zip", Constants.CachedModDirectory, Config.ModPackData.BepInEx);
         await InstallPlugins(Constants.CachedModDirectory);
         await InstallZip("ExtraData.zip", Constants.CachedModDirectory, Config.ModPackData.ExtraData);
-    }   
-    
+    }
 
+    private Task VerifyBepInEx()
+    {
+        if (_hashes is null)
+        {
+            return Task.CompletedTask;
+        }
+        
+        float processed = 0;
+        var total = _hashes.Count;
+        foreach (var hash in _hashes)
+        {
+            var gamePath = new FileInfo(Path.GetFullPath(hash.RelativePath, Config.AmongUsPath));
+            var gameHash = Utilities.FileToHash(gamePath.FullName);
+            if (!hash.Hash.Equals(gameHash, StringComparison.OrdinalIgnoreCase))
+            {
+                Directory.CreateDirectory(gamePath.Directory.FullName);
+                File.Copy(Path.GetFullPath(hash.RelativePath, Constants.CachedModDirectory), gamePath.FullName, true);
+            }
+
+            Dispatcher.UIThread.Invoke(() => UpdateProgress((int)(100 * (processed++ / total))));
+        }
+
+        return Task.CompletedTask;
+    }
+    
+    
     private async Task InstallZip(string name, string directory, ModPackData.ZipData zipData)
     {
         var zipFile = await _httpClient.DownloadZip(name, Constants.DataLocation, zipData);
@@ -252,14 +281,17 @@ public partial class MainWindow : Window
         InstallText.Text = _buttonState.ToString();
     }
     
-    private void Launch()
+    private async void Launch()
     {
         Utilities.KillAmongUs();
+        
+        await VerifyBepInEx();
 
         Utilities.BackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "plugins");
         Utilities.BackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "config");
-         
-        Utilities.CopyDirectory(Constants.CachedModDirectory, Config.AmongUsPath);
+       
+        CopyCacheFolder(Path.Combine("BepInEx","plugins"));
+        CopyCacheFolder(Path.Combine("BepInEx","config"));
         
         ButtonState = ButtonState.Running;
         ProgressBar.ProgressTextFormat = "Running...";
@@ -269,10 +301,22 @@ public partial class MainWindow : Window
         process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(AmongUsOnExit);
     }
 
+    private void CopyCacheFolder(string folderPath)
+    {
+        var cache = Path.GetFullPath(folderPath, Constants.CachedModDirectory);
+        var destination = Path.GetFullPath(folderPath, Config.AmongUsPath);
+        Directory.CreateDirectory(destination);
+
+        Utilities.CopyDirectory(cache, destination);
+    }
+    
     private void AmongUsOnExit()
     {
         Utilities.RestoreBackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "plugins");
-        Utilities.RestoreBackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "config");       
+        Utilities.RestoreBackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "config");
+
+        WindowState = WindowState.Normal;
+        Show();
         
         ButtonState = ButtonState.Loading;
         LoadAmongUsPath();
@@ -280,6 +324,11 @@ public partial class MainWindow : Window
 
     private async void OpenDirectoryPicker(object? _, RoutedEventArgs e)
     {
+        if (ButtonState is ButtonState.Loading or ButtonState.Running)
+        {
+            return;
+        }
+        
         var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = "Open Among Us.exe",
