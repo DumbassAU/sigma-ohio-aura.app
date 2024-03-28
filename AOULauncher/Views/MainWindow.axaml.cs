@@ -56,8 +56,7 @@ public partial class MainWindow : Window
         _httpClient = new HttpClient(ph);
         
         // start downloading launcher data and load among us path to check for mod installation
-        var t = DownloadData();
-        t.GetAwaiter().OnCompleted(LoadAmongUsPath);
+        Task.Run(DownloadData);
     }
 
     private void UpdateProgress(int value)
@@ -71,6 +70,7 @@ public partial class MainWindow : Window
         {
             Config.ModPackData = await _httpClient.DownloadJson<ModPackData>(Constants.ApiLocation);
             _hashes = await _httpClient.DownloadJson<List<FileHash>>(Constants.HashLocation);
+            await Dispatcher.UIThread.InvokeAsync(LoadAmongUsPath);
         }
         catch (Exception e)
         {
@@ -147,6 +147,11 @@ public partial class MainWindow : Window
     
     public async void InstallClickHandler(object sender, RoutedEventArgs args)
     {
+        await ClickHandler();
+    }
+
+    private async Task ClickHandler()
+    {
         ProgressBar.Value = 0;
         switch (ButtonState)
         {
@@ -160,7 +165,7 @@ public partial class MainWindow : Window
             
             case ButtonState.Launch:
                 ButtonState = ButtonState.Loading;
-                Launch();
+                await Launch();
                 break;
             
             case ButtonState.Refresh:
@@ -176,6 +181,7 @@ public partial class MainWindow : Window
                 throw new Exception("Invalid button state");
         }
     }
+    
 
     private async Task InstallMod()
     {
@@ -207,7 +213,7 @@ public partial class MainWindow : Window
 
             Dispatcher.UIThread.Invoke(() => UpdateProgress((int)(100 * (processed++ / total))));
         }
-
+        
         return Task.CompletedTask;
     }
     
@@ -281,7 +287,7 @@ public partial class MainWindow : Window
         InstallText.Text = _buttonState.ToString();
     }
     
-    private async void Launch()
+    private async Task Launch()
     {
         Utilities.KillAmongUs();
         

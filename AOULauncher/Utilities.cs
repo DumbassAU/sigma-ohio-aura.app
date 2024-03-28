@@ -102,6 +102,7 @@ internal static class Utilities {
     public static string FileToHash(string path)
     {
         if (!File.Exists(path)) return "";
+        
         var array = SHA256.HashData(File.ReadAllBytes(path));
         return string.Concat(array.Select(x => x.ToString("x2")));
     }
