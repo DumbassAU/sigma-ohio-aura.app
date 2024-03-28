@@ -4,7 +4,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using AOULauncher.ViewModels;
 using AOULauncher.Views;
-using Avalonia.Controls;
 using Newtonsoft.Json;
 
 namespace AOULauncher;
@@ -32,8 +31,7 @@ public partial class App : Application
                 args.Cancel = window.ButtonState == ButtonState.Running;
                 if (!args.Cancel)
                 {
-                    var str = JsonConvert.SerializeObject(new LauncherConfig(window.AmongUsPath, true));
-                    File.WriteAllText(Path.GetFullPath("launcherConfig.json",Directory.GetCurrentDirectory()), str);
+                    File.WriteAllText(Constants.ConfigPath, JsonConvert.SerializeObject(window.Config));
                 }
             };
         }
