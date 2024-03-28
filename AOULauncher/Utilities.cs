@@ -44,18 +44,16 @@ internal static class Utilities {
         }
     }
 
-    public static void RemoveBackup(string baseDirectory, string folder)
+    public static void RestoreBackupFolder(string baseDirectory, string folder)
     {
         var source = new DirectoryInfo(Path.Combine(baseDirectory, folder));
         var backup = new DirectoryInfo(Path.Combine(baseDirectory, folder+"_bak"));
         
-        source.Delete(true);
-        
         if (backup.Exists)
         {
+            source.Delete(true);
             backup.MoveTo(source.FullName);
         }
-
     }
     
     

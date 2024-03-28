@@ -26,6 +26,8 @@ public partial class App : Application
             };
             desktop.MainWindow = window;
 
+            Directory.CreateDirectory(Constants.DataLocation);
+            
             window.Closing += (_, args) =>
             {
                 args.Cancel = window.ButtonState == ButtonState.Running;

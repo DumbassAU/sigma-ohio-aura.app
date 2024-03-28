@@ -66,7 +66,12 @@ public partial class MainWindow : Window
         }
         catch (Exception e)
         {
-            Dispatcher.UIThread.InvokeAsync(() => Console.Out.WriteLine(e.ToString()));
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                Console.Out.WriteLine(e.ToString());
+                Config.ModPackData = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(Constants.ConfigPath)).ModPackData;
+                LoadAmongUsPath();
+            });
         }
     }
     
@@ -156,7 +161,7 @@ public partial class MainWindow : Window
             
             case ButtonState.Refresh:
                 ButtonState = ButtonState.Loading;
-                Config.AmongUsPath = AmongUsLocator.FindAmongUs() ?? "";
+                LoadAmongUsPath();
                 break;
 
             case ButtonState.Loading:
@@ -175,7 +180,7 @@ public partial class MainWindow : Window
         await InstallZip("BepInEx.zip", Constants.CachedModDirectory, Config.ModPackData.BepInEx);
         await InstallPlugins(Constants.CachedModDirectory);
         await InstallZip("ExtraData.zip", Constants.CachedModDirectory, Config.ModPackData.ExtraData);
-    }
+    }   
     
 
     private async Task InstallZip(string name, string directory, ModPackData.ZipData zipData)
@@ -266,8 +271,8 @@ public partial class MainWindow : Window
 
     private void AmongUsOnExit()
     {
-        Utilities.RemoveBackup(Path.Combine(Config.AmongUsPath,"BepInEx"), "plugins");
-        Utilities.RemoveBackup(Path.Combine(Config.AmongUsPath,"BepInEx"), "config");       
+        Utilities.RestoreBackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "plugins");
+        Utilities.RestoreBackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "config");       
         
         ButtonState = ButtonState.Loading;
         LoadAmongUsPath();
@@ -275,19 +280,23 @@ public partial class MainWindow : Window
 
     private async void OpenDirectoryPicker(object? _, RoutedEventArgs e)
     {
-        var picked = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            AllowMultiple = false
+            Title = "Open Among Us.exe",
+            AllowMultiple = false,
+            FileTypeFilter = [new FilePickerFileType("Among Us"){Patterns = ["Among Us.exe"]}]
         });
-
+        
         if (picked.Count <= 0)
         {
             return;
         }
+
+        var file = new FileInfo(picked[0].Path.LocalPath);
         
-        if (AmongUsLocator.VerifyAmongUsDirectory(picked[0].Path.LocalPath))
+        if (file.Directory is not null && AmongUsLocator.VerifyAmongUsDirectory(file.Directory.FullName))
         {
-            Config.AmongUsPath = picked[0].Path.LocalPath;
+            Config.AmongUsPath = file.Directory.FullName;
         }
 
     }
