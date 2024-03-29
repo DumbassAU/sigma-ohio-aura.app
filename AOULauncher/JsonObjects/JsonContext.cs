@@ -5,12 +5,8 @@ namespace AOULauncher;
 
 [JsonSourceGenerationOptions(AllowTrailingCommas = true)]
 [JsonSerializable(typeof(LauncherConfig))]
-internal partial class LauncherConfigContext : JsonSerializerContext
-{
-}
+internal partial class LauncherConfigContext : JsonSerializerContext;
 
 [JsonSourceGenerationOptions(AllowTrailingCommas = true)]
 [JsonSerializable(typeof(List<FileHash>))]
-internal partial class FileHashListContext : JsonSerializerContext
-{
-}
+internal partial class FileHashListContext : JsonSerializerContext;

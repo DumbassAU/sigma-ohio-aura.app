@@ -4,7 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="400"
         x:Class="AOULauncher.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/launchpad.ico"
         Title="AOU Launcher"
         TransparencyLevelHint="AcrylicBlur"
         Background="Transparent"

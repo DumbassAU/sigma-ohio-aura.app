@@ -6,25 +6,8 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    </PropertyGroup>
-
-    <PropertyGroup Label="AOT-related">
+        <ApplicationIcon>Assets/launchpad.ico</ApplicationIcon>
         <PublishAot>true</PublishAot>
-        <PublishTrimmed>true</PublishTrimmed>
-        <SelfContained>true</SelfContained>
-        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-        <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
-        <TrimmerSingleWarn>false</TrimmerSingleWarn>
-    </PropertyGroup>
-    
-    <PropertyGroup>
-        <TrimMode>link</TrimMode>
-        <!--These can help when debugging weird exceptions especially when reflection is involved. See https://github.com/dotnet/corert/blob/master/Documentation/using-corert/optimizing-corert.md -->
-        <!--RootAllApplicationAssemblies: False -> TrimMode:link See https://github.com/dotnet/runtimelab/issues/597 and https://github.com/dotnet/runtimelab/blob/feature/NativeAOT/docs/using-nativeaot/optimizing.md -->
-        <IlcGenerateCompleteTypeMetadata>false</IlcGenerateCompleteTypeMetadata>
-        <IlcGenerateStackTraceData Condition="'$(Configuration.toUpper())' != 'DEBUG'">false</IlcGenerateStackTraceData>
-        <IlcDisableUnhandledExceptionExperience>true</IlcDisableUnhandledExceptionExperience>
-        <StripSymbols Condition="'$(Configuration.toUpper())' != 'DEBUG'">true</StripSymbols>
     </PropertyGroup>
 
     <ItemGroup>
