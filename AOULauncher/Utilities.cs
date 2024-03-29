@@ -6,9 +6,10 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Ionic.Zip;
-using Newtonsoft.Json;
 
 namespace AOULauncher;
 
@@ -71,11 +72,11 @@ internal static class Utilities {
         }
     }
     
-    public static async Task<T?> DownloadJson<T>(this HttpClient httpClient, string url)
+    public static async Task<T?> DownloadJson<T>(this HttpClient httpClient, string url, JsonTypeInfo<T> context)
     {
         var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Get, url));
         using var reader = new StreamReader(await response.Content.ReadAsStreamAsync());
-        return JsonConvert.DeserializeObject<T>(await reader.ReadToEndAsync());
+        return JsonSerializer.Deserialize(await reader.ReadToEndAsync(), context);
     }
 
     public static async Task DownloadFile(this HttpClient httpClient, string name, string directory, string url)

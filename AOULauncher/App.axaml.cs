@@ -1,10 +1,9 @@
 using System.IO;
+using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using AOULauncher.ViewModels;
 using AOULauncher.Views;
-using Newtonsoft.Json;
 
 namespace AOULauncher;
 
@@ -19,11 +18,7 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var mainWindowViewModel = new MainWindowViewModel();
-            var window = new MainWindow
-            {
-                DataContext = mainWindowViewModel,
-            };
+            var window = new MainWindow();
             desktop.MainWindow = window;
 
             Directory.CreateDirectory(Constants.DataLocation);
@@ -33,7 +28,7 @@ public partial class App : Application
                 args.Cancel = window.ButtonState == ButtonState.Running;
                 if (!args.Cancel)
                 {
-                    File.WriteAllText(Constants.ConfigPath, JsonConvert.SerializeObject(window.Config));
+                    File.WriteAllText(Constants.ConfigPath, JsonSerializer.Serialize(window.Config, LauncherConfigContext.Default.LauncherConfig));
                 }
             };
         }

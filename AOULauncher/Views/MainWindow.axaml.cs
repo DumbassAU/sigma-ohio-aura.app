@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Handlers;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
@@ -13,7 +14,6 @@ using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Ionic.Zip;
-using Newtonsoft.Json;
 
 namespace AOULauncher.Views;
 
@@ -37,10 +37,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        
         // Load config
         Config = File.Exists(Constants.ConfigPath)
-            ? JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(Constants.ConfigPath))
+            ? JsonSerializer.Deserialize(File.ReadAllText(Constants.ConfigPath), LauncherConfigContext.Default.LauncherConfig)
             : new LauncherConfig();
 
         // initialize http client and progress handler
@@ -68,8 +67,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            Config.ModPackData = await _httpClient.DownloadJson<ModPackData>(Constants.ApiLocation);
-            _hashes = await _httpClient.DownloadJson<List<FileHash>>(Constants.HashLocation);
+            Config.ModPackData = await _httpClient.DownloadJson(Constants.ApiLocation, LauncherConfigContext.Default.ModPackData);
+            _hashes = await _httpClient.DownloadJson(Constants.HashLocation, FileHashListContext.Default.ListFileHash);
             await Dispatcher.UIThread.InvokeAsync(LoadAmongUsPath);
         }
         catch (Exception e)
@@ -77,7 +76,7 @@ public partial class MainWindow : Window
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 Console.Out.WriteLine(e.ToString());
-                Config.ModPackData = JsonConvert.DeserializeObject<LauncherConfig>(File.ReadAllText(Constants.ConfigPath)).ModPackData;
+                Config.ModPackData = JsonSerializer.Deserialize(File.ReadAllText(Constants.ConfigPath), LauncherConfigContext.Default.LauncherConfig).ModPackData;
                 LoadAmongUsPath();
             });
         }
@@ -355,6 +354,7 @@ public partial class MainWindow : Window
         if (file.Directory is not null && AmongUsLocator.VerifyAmongUsDirectory(file.Directory.FullName))
         {
             Config.AmongUsPath = file.Directory.FullName;
+            LoadAmongUsPath();
         }
 
     }
