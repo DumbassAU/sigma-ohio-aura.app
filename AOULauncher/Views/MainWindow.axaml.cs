@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -22,6 +23,10 @@ public partial class MainWindow : Window
     public LauncherConfig Config;
     private ButtonState _buttonState;
     private List<FileHash>? _hashes;
+
+    private string BepInExPath => Path.Combine(Config.AmongUsPath, "BepInEx");
+    private string PluginPath => Path.Combine(BepInExPath,"plugins");
+    
 
     public ButtonState ButtonState
     {
@@ -92,7 +97,7 @@ public partial class MainWindow : Window
        
         ProgressBar.ProgressTextFormat = "";
 
-        var bepInExPlugins = new DirectoryInfo(Path.Combine(Constants.CachedModDirectory,"BepInEx","plugins"));
+        var bepInExPlugins = new DirectoryInfo(PluginPath);
         
         if (!bepInExPlugins.Exists)
         {
@@ -111,13 +116,13 @@ public partial class MainWindow : Window
 
             if (!exists)
             {
-                Console.Out.WriteLine(info.Name);
+                Console.Out.WriteLine($"Missing {info.Name}");
                 filesPresent = false;
             }
 
             if (!updated)
             {
-                Console.Out.WriteLine(info.Name);
+                Console.Out.WriteLine($"Out of date: {info.Name}");
                 updateRequired = true;
             }
         }
@@ -131,6 +136,16 @@ public partial class MainWindow : Window
             ButtonState = ButtonState.Install;
         }
     }
+
+    private bool DetectExtraPlugins(string pluginPath)
+    {
+        var dir = new DirectoryInfo(pluginPath);
+        if (!dir.Exists) return false;
+        
+        var hashes = Config.ModPackData.ModList.Select(x => x.Hash).ToArray();
+        return dir.EnumerateFiles("*.dll", SearchOption.AllDirectories).Any(plugin => !hashes.Contains(Utilities.FileToHash(plugin.FullName)));
+    }
+    
     
     public async void InstallClickHandler(object sender, RoutedEventArgs args)
     {
@@ -146,7 +161,6 @@ public partial class MainWindow : Window
             case ButtonState.Update:
                 ButtonState = ButtonState.Loading;
                 await InstallMod();
-
                 LoadAmongUsPath();
                 break;
             
@@ -174,9 +188,17 @@ public partial class MainWindow : Window
     {
         Utilities.KillAmongUs();
         
-        await InstallZip("BepInEx.zip", Constants.CachedModDirectory, Config.ModPackData.BepInEx);
-        await InstallPlugins(Constants.CachedModDirectory);
-        await InstallZip("ExtraData.zip", Constants.CachedModDirectory, Config.ModPackData.ExtraData);
+        await InstallZip("BepInEx.zip", Constants.CachedBepInEx, Config.ModPackData.BepInEx);
+        await VerifyBepInEx();
+
+        if (DetectExtraPlugins(PluginPath))
+        {
+            Utilities.BackupFolder(BepInExPath,"plugins");
+            Utilities.BackupFolder(BepInExPath, "config");
+        }
+        
+        await InstallPlugins(Config.AmongUsPath);
+        await InstallZip("ExtraData.zip", Config.AmongUsPath, Config.ModPackData.ExtraData);
     }
 
     private async Task VerifyBepInEx()
@@ -196,7 +218,7 @@ public partial class MainWindow : Window
             if (!hash.Hash.Equals(gameHash, StringComparison.OrdinalIgnoreCase))
             {
                 Directory.CreateDirectory(gamePath.Directory!.FullName);
-                File.Copy(Path.GetFullPath(hash.RelativePath, Constants.CachedModDirectory), gamePath.FullName, true);
+                File.Copy(Path.GetFullPath(hash.RelativePath, Constants.CachedBepInEx), gamePath.FullName, true);
             }
 
             Dispatcher.UIThread.Invoke(() => UpdateProgress((int)(100 * (processed++ / total))));
@@ -249,6 +271,7 @@ public partial class MainWindow : Window
         switch (ButtonState)
         {
             case ButtonState.Refresh:
+                RemoveButton.IsEnabled = RemoveButton.IsVisible = false;
                 InfoIcon.IsVisible = true;
                 InfoText.Foreground = Brush.Parse("#FFBB00");
                 InfoText.Text = "";
@@ -259,14 +282,18 @@ public partial class MainWindow : Window
                 
             case ButtonState.Running:
             case ButtonState.Loading:
-                InstallButton.IsEnabled = false;
+                RemoveButton.IsEnabled = RemoveButton.IsVisible = InstallButton.IsEnabled = false;
                 SetInfoToPath();
                 break;
             case ButtonState.Install:
+                RemoveButton.IsEnabled = RemoveButton.IsVisible = false;
+                InstallButton.IsEnabled = true;
+                SetInfoToPath();
+                break;
             case ButtonState.Update:
             case ButtonState.Launch:
             default:
-                InstallButton.IsEnabled = true;
+                RemoveButton.IsEnabled = RemoveButton.IsVisible = InstallButton.IsEnabled = true;
                 SetInfoToPath();
                 break;
         }
@@ -288,12 +315,6 @@ public partial class MainWindow : Window
         
         await VerifyBepInEx();
 
-        Utilities.BackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "plugins");
-        Utilities.BackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "config");
-       
-        CopyCacheFolder(Path.Combine("BepInEx","plugins"));
-        CopyCacheFolder(Path.Combine("BepInEx","config"));
-        
         ButtonState = ButtonState.Running;
         ProgressBar.ProgressTextFormat = "Running...";
 
@@ -346,20 +367,8 @@ public partial class MainWindow : Window
         AmongUsOnExit();
     }
     
-    private void CopyCacheFolder(string folderPath)
-    {
-        var cache = Path.GetFullPath(folderPath, Constants.CachedModDirectory);
-        var destination = Path.GetFullPath(folderPath, Config.AmongUsPath);
-        Directory.CreateDirectory(destination);
-
-        Utilities.CopyDirectory(cache, destination);
-    }
-    
     private void AmongUsOnExit()
     {
-        Utilities.RestoreBackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "plugins");
-        Utilities.RestoreBackupFolder(Path.Combine(Config.AmongUsPath,"BepInEx"), "config");
-
         WindowState = WindowState.Normal;
         Topmost = true;
         Topmost = false;
@@ -367,6 +376,37 @@ public partial class MainWindow : Window
         Show();
         
         ButtonState = ButtonState.Loading;
+        LoadAmongUsPath();
+    }
+    
+    private void Uninstall(object? sender, RoutedEventArgs e)
+    {
+        var keepBepInEx = DetectExtraPlugins(Path.Combine(BepInExPath,"plugins_lp_backup"));
+
+        if (keepBepInEx)
+        {
+            Utilities.RestoreBackupFolder(BepInExPath,"plugins");
+            Utilities.RestoreBackupFolder(BepInExPath,"config");
+        }
+        else
+        {
+            var dirInfo = new DirectoryInfo(Config.AmongUsPath);
+            foreach (var dir in dirInfo.EnumerateDirectories())
+            {
+                if (Constants.UninstallPaths.Contains(dir.Name))
+                {
+                    dir.Delete(true);
+                }
+            }
+
+            foreach (var fileInfo in dirInfo.EnumerateFiles())
+            {
+                if (Constants.UninstallPaths.Contains(fileInfo.Name))
+                {
+                    fileInfo.Delete();
+                }
+            }
+        }
         LoadAmongUsPath();
     }
 

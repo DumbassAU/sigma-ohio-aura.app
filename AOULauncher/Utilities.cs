@@ -28,7 +28,7 @@ internal static class Utilities {
     public static void BackupFolder(string baseDirectory, string folder)
     {
         var source = new DirectoryInfo(Path.Combine(baseDirectory, folder));
-        var backup = new DirectoryInfo(Path.Combine(baseDirectory, folder+"_bak"));
+        var backup = new DirectoryInfo(Path.Combine(baseDirectory, folder+"_lp_backup"));
         
         if (!source.Exists)
         {
@@ -48,7 +48,7 @@ internal static class Utilities {
     public static void RestoreBackupFolder(string baseDirectory, string folder)
     {
         var source = new DirectoryInfo(Path.Combine(baseDirectory, folder));
-        var backup = new DirectoryInfo(Path.Combine(baseDirectory, folder+"_bak"));
+        var backup = new DirectoryInfo(Path.Combine(baseDirectory, folder+"_lp_backup"));
 
         if (!backup.Exists)
         {
