@@ -81,6 +81,7 @@ internal static class Utilities {
 
     public static async Task DownloadFile(this HttpClient httpClient, string name, string directory, string url)
     {
+        Directory.CreateDirectory(directory);
         await using var stream = await httpClient.GetStreamAsync(url);
         await using var destination = new FileStream(Path.Combine(directory,name), FileMode.OpenOrCreate);
         await stream.CopyToAsync(destination);
