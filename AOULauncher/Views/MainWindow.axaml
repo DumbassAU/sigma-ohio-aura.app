@@ -73,8 +73,7 @@
                                        FontSize="15"
                                        VerticalAlignment="Center"
                                        FontWeight="Light"
-                                       Foreground="#FFBB00">
-                                There was an error loading the launcher
+                                       Foreground="#FFBB00">Loading...
                             </TextBlock>
                         </StackPanel>
                     </Button>

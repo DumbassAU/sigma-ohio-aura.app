@@ -1,33 +1,34 @@
-﻿namespace AOULauncher;
+﻿
+namespace AOULauncher;
 
-public struct LauncherConfig
+public struct LauncherConfig()
 {
-    public string AmongUsPath { get; set; }
-    public ModPackData ModPackData { get; set; }
-    
+    public string AmongUsPath { get; set; } = "";
+    public AmongUsPlatform Platform { get; set; } = AmongUsPlatform.Steam;
+    public ModPackData ModPackData { get; set; } = default;
 }
 
-public struct ModPackData
+public struct ModPackData()
 {
-    public ZipData BepInEx { get; set; }
-    
-    public ZipData ExtraData { get; set; }
-    
-    public ModInfo[] ModList { get; set; }
+    public ZipData BepInEx { get; set; } = default;
 
-    public struct ZipData
+    public ZipData ExtraData { get; set; } = default;
+
+    public ModInfo[] ModList { get; set; } = [];
+
+    public struct ZipData()
     {
-        public string Link { get; set; }
-        
-        public string Hash { get; set; }
+        public string Link { get; set; } = "";
+
+        public string Hash { get; set; } = "";
     }
     
-    public struct ModInfo
+    public struct ModInfo()
     {
-        public string Name { get; set; }
-        
-        public string Hash { get; set; }
-        
-        public string Download { get; set; }
+        public string Name { get; set; } = "";
+
+        public string Hash { get; set; } = "";
+
+        public string Download { get; set; } = "";
     }
 }

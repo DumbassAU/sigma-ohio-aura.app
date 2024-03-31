@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
-using System.Net.Http.Handlers;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -19,8 +17,9 @@ namespace AOULauncher.Views;
 
 public partial class MainWindow : Window
 {
+    public static MainWindow? Instance { get; private set; }
+    
     public LauncherConfig Config;
-    private readonly HttpClient _httpClient;
     private ButtonState _buttonState;
     private List<FileHash>? _hashes;
 
@@ -42,23 +41,13 @@ public partial class MainWindow : Window
             ? JsonSerializer.Deserialize(File.ReadAllText(Constants.ConfigPath), LauncherConfigContext.Default.LauncherConfig)
             : new LauncherConfig();
 
-        // initialize http client and progress handler
-        var ph = new ProgressMessageHandler(new HttpClientHandler{AllowAutoRedirect = true});
-        ph.HttpReceiveProgress += (_, args) =>
-        {
-            Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                UpdateProgress(args.ProgressPercentage);
-            });
-        };
-        
-        _httpClient = new HttpClient(ph);
+        Instance = this;
         
         // start downloading launcher data and load among us path to check for mod installation
         Task.Run(DownloadData);
     }
 
-    private void UpdateProgress(int value)
+    public void UpdateProgress(int value)
     {
         ProgressBar.Value = value;
     }
@@ -67,8 +56,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            Config.ModPackData = await _httpClient.DownloadJson(Constants.ApiLocation, LauncherConfigContext.Default.ModPackData);
-            _hashes = await _httpClient.DownloadJson(Constants.HashLocation, FileHashListContext.Default.ListFileHash);
+            Config.ModPackData = await NetworkManager.HttpClient.DownloadJson(Constants.ApiLocation, LauncherConfigContext.Default.ModPackData);
+            _hashes = await NetworkManager.HttpClient.DownloadJson(Constants.HashLocation, FileHashListContext.Default.ListFileHash);
             await Dispatcher.UIThread.InvokeAsync(LoadAmongUsPath);
         }
         catch (Exception e)
@@ -101,7 +90,6 @@ public partial class MainWindow : Window
             }
         }
        
-        Console.Out.WriteLine(Path.Combine(Config.AmongUsPath, "Among Us.exe"));
         ProgressBar.ProgressTextFormat = "";
 
         var bepInExPlugins = new DirectoryInfo(Path.Combine(Constants.CachedModDirectory,"BepInEx","plugins"));
@@ -191,11 +179,12 @@ public partial class MainWindow : Window
         await InstallZip("ExtraData.zip", Constants.CachedModDirectory, Config.ModPackData.ExtraData);
     }
 
-    private Task VerifyBepInEx()
+    private async Task VerifyBepInEx()
     {
         if (_hashes is null)
         {
-            return Task.CompletedTask;
+            await InstallZip("BepInEx.zip", Config.AmongUsPath, Config.ModPackData.BepInEx);
+            return;
         }
         
         float processed = 0;
@@ -212,14 +201,12 @@ public partial class MainWindow : Window
 
             Dispatcher.UIThread.Invoke(() => UpdateProgress((int)(100 * (processed++ / total))));
         }
-        
-        return Task.CompletedTask;
     }
     
     
     private async Task InstallZip(string name, string directory, ModPackData.ZipData zipData)
     {
-        var zipFile = await _httpClient.DownloadZip(name, Constants.DataLocation, zipData);
+        var zipFile = await NetworkManager.HttpClient.DownloadZip(name, Constants.DataLocation, zipData);
         
         ProgressBar.ProgressTextFormat = $"Installing {name}";
  
@@ -252,7 +239,7 @@ public partial class MainWindow : Window
             }
             ProgressBar.ProgressTextFormat = $"Downloading {plugin.Name}...";
 
-            await _httpClient.DownloadFile(plugin.Name, pluginPath, plugin.Download);
+            await NetworkManager.HttpClient.DownloadFile(plugin.Name, pluginPath, plugin.Download);
         }
         ProgressBar.ProgressTextFormat = "Installed plugins";
     }
@@ -271,19 +258,28 @@ public partial class MainWindow : Window
                 break;
                 
             case ButtonState.Running:
+            case ButtonState.Loading:
+                InstallButton.IsEnabled = false;
+                SetInfoToPath();
+                break;
             case ButtonState.Install:
             case ButtonState.Update:
             case ButtonState.Launch:
-            case ButtonState.Loading:
             default:
-                InfoIcon.IsVisible = false;
-                InfoText.Foreground = Brush.Parse("#555");
-                InfoText.Text = Config.AmongUsPath;
+                InstallButton.IsEnabled = true;
+                SetInfoToPath();
                 break;
         }
             
         InstallButton.IsEnabled = ButtonState != ButtonState.Running;
         InstallText.Text = _buttonState.ToString();
+    }
+
+    private void SetInfoToPath()
+    {
+        InfoIcon.IsVisible = false;
+        InfoText.Foreground = Brush.Parse("#555");
+        InfoText.Text = Config.AmongUsPath;
     }
     
     private async Task Launch()
@@ -300,12 +296,56 @@ public partial class MainWindow : Window
         
         ButtonState = ButtonState.Running;
         ProgressBar.ProgressTextFormat = "Running...";
-        
+
+        if (AmongUsLocator.GetPlatform(Config.AmongUsPath) == AmongUsPlatform.Epic)
+        {
+            EpicLaunch();
+            return;
+        }
+
+        NormalLaunch();
+    }
+
+    private void NormalLaunch()
+    {
         var process = Process.Start(Path.Combine(Config.AmongUsPath,"Among Us.exe")); 
         process.EnableRaisingEvents = true;
         process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(AmongUsOnExit);
     }
 
+    private void EpicLaunch()
+    {
+        var psi = new ProcessStartInfo(
+            "com.epicgames.launcher://apps/33956bcb55d4452d8c47e16b94e294bd%3A729a86a5146640a2ace9e8c595414c56%3A963137e4c29d4c79a81323b8fab03a40?action=launch&silent=true")
+            {
+                UseShellExecute = true
+            };
+        
+        Process.Start(psi);
+        Task.Run(WaitForAmongUs);
+    }
+
+    private async Task WaitForAmongUs()
+    {
+        for (var i = 0; i < 60; i++)
+        {
+            await Task.Delay(500);
+
+            var processes = Process.GetProcessesByName("Among Us");
+            if (processes.Length <= 0)
+            {
+                continue;
+            }
+            
+            var process = processes[0];
+            process.EnableRaisingEvents = true;
+            process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(AmongUsOnExit);
+            return;
+        }
+        
+        AmongUsOnExit();
+    }
+    
     private void CopyCacheFolder(string folderPath)
     {
         var cache = Path.GetFullPath(folderPath, Constants.CachedModDirectory);

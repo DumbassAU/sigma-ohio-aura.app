@@ -8,6 +8,24 @@ namespace AOULauncher;
 
 public static class AmongUsLocator
 {
+    public const string EosDllRelativePath = @"Among Us_Data\Plugins\x86\GfxPluginEGS.dll";
+    
+    public static AmongUsPlatform? GetPlatform(string path)
+    {
+        if (!VerifyAmongUsDirectory(path))
+        {
+            return null;
+        }
+
+        if (File.Exists(Path.GetFullPath(EosDllRelativePath, path)))
+        {
+            return AmongUsPlatform.Epic;
+        }
+
+        return AmongUsPlatform.Steam;
+    }
+    
+    
     // return among us path by checking processes first, then registry
     public static string? FindAmongUs()
     {
