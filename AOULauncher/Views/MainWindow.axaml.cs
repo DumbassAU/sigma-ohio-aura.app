@@ -318,6 +318,12 @@ public partial class MainWindow : Window
         ButtonState = ButtonState.Running;
         ProgressBar.ProgressTextFormat = "Running...";
 
+        var cheater = new FileInfo(Path.GetFullPath("version.dll", Config.AmongUsPath));
+        if (cheater.Exists)
+        {
+            Path.ChangeExtension(cheater.FullName, ".dll.naughtynaughty");
+        }
+        
         if (AmongUsLocator.GetPlatform(Config.AmongUsPath) == AmongUsPlatform.Epic)
         {
             EpicLaunch();
