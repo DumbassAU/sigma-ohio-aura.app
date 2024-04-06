@@ -355,7 +355,7 @@ public partial class MainWindow : Window
 
     private void SteamLaunch()
     {
-        var psi = new ProcessStartInfo("steam://open")
+        var psi = new ProcessStartInfo("steam://open/games")
         {
             UseShellExecute = true
         };
