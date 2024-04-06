@@ -10,7 +10,7 @@ public static class AmongUsLocator
 {
     public const string EosDllRelativePath = @"Among Us_Data/Plugins/x86/GfxPluginEGS.dll";
     
-    public static AmongUsPlatform? GetPlatform(string path)
+    public static AmongUsPlatform? GetPlatform(string path, string steamHash)
     {
         if (!VerifyAmongUsDirectory(path))
         {
@@ -22,7 +22,16 @@ public static class AmongUsLocator
             return AmongUsPlatform.Epic;
         }
 
-        return AmongUsPlatform.Steam;
+        var globalGameFile = new FileInfo(Path.Combine(path, "Among Us_Data", "globalgamemanagers"));
+
+        if (!globalGameFile.Exists)
+        {
+            return AmongUsPlatform.Itch;
+        }
+        
+        var hash = Utilities.FileToHash(globalGameFile.FullName);
+
+        return hash == steamHash ? AmongUsPlatform.Steam : AmongUsPlatform.Itch;
     }
     
     

@@ -323,14 +323,27 @@ public partial class MainWindow : Window
         {
             Path.ChangeExtension(cheater.FullName, ".dll.naughtynaughty");
         }
-        
-        if (AmongUsLocator.GetPlatform(Config.AmongUsPath) == AmongUsPlatform.Epic)
-        {
-            EpicLaunch();
-            return;
-        }
 
-        NormalLaunch();
+        var platform = AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData.SteamHash);
+
+        switch (platform)
+        {
+            case AmongUsPlatform.Steam:
+                SteamLaunch();
+                break;
+            case AmongUsPlatform.Itch:
+                NormalLaunch();
+                break;
+            case AmongUsPlatform.Epic:
+                EpicLaunch();
+                break;
+            case null:
+                LoadAmongUsPath();
+                break;
+            default:
+                NormalLaunch();
+                break;
+        }
     }
 
     private void NormalLaunch()
@@ -340,13 +353,25 @@ public partial class MainWindow : Window
         process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(AmongUsOnExit);
     }
 
+    private void SteamLaunch()
+    {
+        var psi = new ProcessStartInfo("steam://open")
+        {
+            UseShellExecute = true
+        };
+        
+        Process.Start(psi);
+        
+        NormalLaunch();
+    }
+
     private void EpicLaunch()
     {
         var psi = new ProcessStartInfo(
             "com.epicgames.launcher://apps/33956bcb55d4452d8c47e16b94e294bd%3A729a86a5146640a2ace9e8c595414c56%3A963137e4c29d4c79a81323b8fab03a40?action=launch&silent=true")
-            {
-                UseShellExecute = true
-            };
+        {
+            UseShellExecute = true
+        };
         
         Process.Start(psi);
         Task.Run(WaitForAmongUs);

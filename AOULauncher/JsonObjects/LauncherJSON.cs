@@ -16,6 +16,8 @@ public struct ModPackData()
 
     public ModInfo[] ModList { get; set; } = [];
 
+    public string SteamHash { get; set; } = "";
+
     public struct ZipData()
     {
         public string Link { get; set; } = "";
