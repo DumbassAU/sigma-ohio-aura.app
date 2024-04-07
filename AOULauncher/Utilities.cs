@@ -84,6 +84,7 @@ internal static class Utilities {
         Directory.CreateDirectory(directory);
         await using var stream = await httpClient.GetStreamAsync(url);
         await using var destination = new FileStream(Path.Combine(directory,name), FileMode.OpenOrCreate);
+        destination.SetLength(0);
         await stream.CopyToAsync(destination);
     }
     
