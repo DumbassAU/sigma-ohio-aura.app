@@ -10,6 +10,10 @@ public struct LauncherConfig()
 
 public struct ModPackData()
 {
+    public string LatestLauncherVersion { get; set; } = "";
+
+    public string LauncherUpdateLink { get; set; } = "";
+    
     public ZipData BepInEx { get; set; } = default;
 
     public ZipData ExtraData { get; set; } = default;

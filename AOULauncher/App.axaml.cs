@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text.Json;
 using Avalonia;
@@ -18,19 +19,27 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var window = new MainWindow();
-            desktop.MainWindow = window;
-
-            Directory.CreateDirectory(Constants.DataLocation);
-            
-            window.Closing += (_, args) =>
+            try
             {
-                args.Cancel = window.ButtonState == ButtonState.Running;
-                if (!args.Cancel)
+                var window = new MainWindow();
+                desktop.MainWindow = window;
+
+                Directory.CreateDirectory(Constants.DataLocation);
+            
+                window.Closing += (_, args) =>
                 {
-                    File.WriteAllText(Constants.ConfigPath, JsonSerializer.Serialize(window.Config, LauncherConfigContext.Default.LauncherConfig));
-                }
-            };
+                    args.Cancel = window.ButtonState == ButtonState.Running;
+                    if (!args.Cancel)
+                    {
+                        File.WriteAllText(Constants.ConfigPath, JsonSerializer.Serialize(window.Config, LauncherConfigContext.Default.LauncherConfig));
+                    }
+                };
+            }
+            catch (Exception e)
+            {
+                var window = new Error(e.ToString());
+                desktop.MainWindow = window;
+            }
         }
 
         base.OnFrameworkInitializationCompleted();

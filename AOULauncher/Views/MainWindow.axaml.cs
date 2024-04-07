@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -48,8 +49,10 @@ public partial class MainWindow : Window
 
         Instance = this;
         
+        RemoveOutdatedLauncher();
+        
         // start downloading launcher data and load among us path to check for mod installation
-        Task.Run(DownloadData);
+        Task.Run(DownloadData).ConfigureAwait(false);
     }
 
     public void UpdateProgress(int value)
@@ -63,6 +66,7 @@ public partial class MainWindow : Window
         {
             Config.ModPackData = await NetworkManager.HttpClient.DownloadJson(Constants.ApiLocation, LauncherConfigContext.Default.ModPackData);
             _hashes = await NetworkManager.HttpClient.DownloadJson(Constants.HashLocation, FileHashListContext.Default.ListFileHash);
+            await CheckLauncherUpdate();
             await Dispatcher.UIThread.InvokeAsync(LoadAmongUsPath);
         }
         catch (Exception e)
@@ -74,6 +78,46 @@ public partial class MainWindow : Window
                 LoadAmongUsPath();
             });
         }
+    }
+
+    private static void RemoveOutdatedLauncher()
+    {
+        var outdated = new FileInfo(Path.Combine(AppContext.BaseDirectory,"AOULauncher.exe.old"));
+
+        if (outdated.Exists)
+        {
+            outdated.Delete();
+        }
+    }
+    
+    
+    private async Task CheckLauncherUpdate()
+    {
+        if (!Version.TryParse(Config.ModPackData.LatestLauncherVersion, out var version))
+        {
+            return;
+        }
+
+        var assembly = Assembly.GetExecutingAssembly();
+        await Console.Out.WriteLineAsync(assembly.GetName().Version +", "+version); 
+        if (version <= assembly.GetName().Version)
+        {
+            return;
+        }
+
+        var file = new FileInfo(Path.Combine(AppContext.BaseDirectory,"AOULauncher.exe"));
+
+        if (!file.Exists)
+        {
+            return;
+        }
+
+        file.MoveTo(file.FullName+".old", true);
+
+        await NetworkManager.HttpClient.DownloadFile("AOULauncher.exe", AppContext.BaseDirectory, Config.ModPackData.LauncherUpdateLink);
+
+        Process.Start(Path.Combine(AppContext.BaseDirectory, "AOULauncher.exe"));
+        Process.GetCurrentProcess().Kill();
     }
     
     private void LoadAmongUsPath()

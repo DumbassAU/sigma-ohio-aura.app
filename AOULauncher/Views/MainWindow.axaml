@@ -46,7 +46,6 @@
                 
                 <StackPanel HorizontalAlignment="Center"
                             Orientation="Horizontal">
-                    
                     <Button Background="#333"
                             IsEnabled="False"
                             Name="InstallButton"
@@ -60,9 +59,9 @@
                             FontWeight="UltraLight">
                             Install
                         </TextBlock>
-                    </Button>
+                    </Button> 
                     
-                    <Button Background="#311"
+                    <Button Background="#331A1A"
                             IsVisible="False"
                             Name="RemoveButton"
                             HorizontalAlignment="Center"
@@ -78,26 +77,39 @@
                     
                 </StackPanel>
                 
-                <Button Name="InfoButton"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center" 
+                <Panel>
+                    <!--
+                    <Button
                         Background="Transparent"
-                        Click="OpenDirectoryPicker">
-                    <StackPanel Orientation="Horizontal">
-                        <Image Name="InfoIcon"
-                               IsEnabled="False"
-                               Source="/Assets/warning.png" 
-                               Width="50"
-                               Margin="0,0,10,0"/>
-                        <TextBlock Name="InfoText"
-                                   FontSize="15"
-                                   VerticalAlignment="Center"
-                                   FontWeight="Light"
-                                   Foreground="#FFBB00">Loading...
-                        </TextBlock>
-                    </StackPanel>
-                </Button>
-
+                        Margin="25,0,0,0">
+                        <Image 
+                            Source="/Assets/settings.png"
+                            Width="25"
+                            Margin="0">
+                        </Image>
+                    </Button> !-->
+                    
+                    <Button Name="InfoButton"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center" 
+                            Background="Transparent"
+                            Click="OpenDirectoryPicker">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Name="InfoIcon"
+                                   IsEnabled="False"
+                                   Source="/Assets/warning.png" 
+                                   Width="50"
+                                   Margin="0,0,10,0"/>
+                            <TextBlock Name="InfoText"
+                                       FontSize="15"
+                                       VerticalAlignment="Center"
+                                       FontWeight="Light"
+                                       Foreground="#FFBB00">Loading...
+                            </TextBlock>
+                        </StackPanel>
+                    </Button>
+                    
+                </Panel>
                 
                 
                 <ProgressBar Name="ProgressBar"
@@ -113,8 +125,6 @@
                         </Transitions>
                     </ProgressBar.Transitions>
                 </ProgressBar>
-
-            
             </StackPanel>
 
             <StackPanel DockPanel.Dock="Top"
