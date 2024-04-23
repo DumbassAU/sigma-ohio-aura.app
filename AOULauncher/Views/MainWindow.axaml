@@ -44,38 +44,20 @@
             
             <StackPanel DockPanel.Dock="Bottom">
                 
-                <StackPanel HorizontalAlignment="Center"
-                            Orientation="Horizontal">
-                    <Button Background="#333"
-                            IsEnabled="False"
-                            Name="InstallButton"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Margin="15"
-                            Click="InstallClickHandler">
-                        <TextBlock 
-                            Name="InstallText"
-                            FontSize="30"
-                            FontWeight="UltraLight">
-                            Install
-                        </TextBlock>
-                    </Button> 
-                    
-                    <Button Background="#331A1A"
-                            IsVisible="False"
-                            Name="RemoveButton"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Margin="15"
-                            Click="Uninstall">
-                        <TextBlock 
-                            FontSize="30"
-                            FontWeight="UltraLight">
-                            Uninstall
-                        </TextBlock>
-                    </Button>
-                    
-                </StackPanel>
+                <Button Background="#333"
+                        IsEnabled="False"
+                        Name="InstallButton"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Margin="15"
+                        Click="InstallClickHandler">
+                    <TextBlock 
+                        Name="InstallText"
+                        FontSize="30"
+                        FontWeight="UltraLight">
+                        Install
+                    </TextBlock>
+                </Button> 
                 
                 <Panel>
                     <!--
