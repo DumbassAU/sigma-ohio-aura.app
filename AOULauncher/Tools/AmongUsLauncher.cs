@@ -2,9 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using AOULauncher.Enum;
 using Avalonia.Threading;
 
-namespace AOULauncher;
+namespace AOULauncher.Tools;
 
 public class AmongUsLauncher
 {

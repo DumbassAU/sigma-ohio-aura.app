@@ -1,4 +1,4 @@
-﻿namespace AOULauncher;
+﻿namespace AOULauncher.Enum;
 
 public enum ButtonState
 {

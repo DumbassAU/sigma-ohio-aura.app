@@ -1,4 +1,6 @@
 ﻿
+using AOULauncher.Enum;
+
 namespace AOULauncher;
 
 public struct LauncherConfig()

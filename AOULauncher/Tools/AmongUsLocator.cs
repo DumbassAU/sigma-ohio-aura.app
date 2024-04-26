@@ -2,9 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using AOULauncher.Enum;
 using Microsoft.Win32;
 
-namespace AOULauncher;
+namespace AOULauncher.Tools;
 
 public static class AmongUsLocator
 {

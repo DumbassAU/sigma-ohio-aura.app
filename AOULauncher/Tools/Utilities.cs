@@ -11,7 +11,7 @@ using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 using Ionic.Zip;
 
-namespace AOULauncher;
+namespace AOULauncher.Tools;
 
 internal static class Utilities {
     

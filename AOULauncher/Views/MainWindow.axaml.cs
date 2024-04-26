@@ -7,6 +7,8 @@ using System.Net.Http.Handlers;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AOULauncher.Enum;
+using AOULauncher.Tools;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;

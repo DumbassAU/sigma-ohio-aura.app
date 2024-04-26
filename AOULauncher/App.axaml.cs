@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using AOULauncher.Enum;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
