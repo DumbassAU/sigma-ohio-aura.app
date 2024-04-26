@@ -216,78 +216,15 @@ public partial class MainWindow : Window
         }
     }
 
-    // create our own doorstop config
-    private async Task SetDoorstopConfig()
-    {
-        var targetAssembly = Path.Combine(Constants.ModFolder, "BepInEx","core","BepInEx.Unity.IL2CPP.dll");
-        var coreclrDir = Path.Combine(Constants.ModFolder, "dotnet");
-        var coreclrPath = Path.Combine(Constants.ModFolder, "dotnet", "coreclr.dll");
-
-        var rawCfg = $"""
-                      [General]
-                      enabled = true
-                      target_assembly = {targetAssembly}
-                      [Il2Cpp]
-                      coreclr_path = {coreclrPath}
-                      corlib_dir = {coreclrDir}
-                      """;
-        var existingCfg = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
-        var existingBak = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini.bak"));
-        if (existingCfg.Exists)
-        {
-            if (!existingBak.Exists)
-            {
-                existingCfg.MoveTo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini.bak"));
-            }
-        }
-        
-        await File.WriteAllTextAsync(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"), rawCfg);
-    }
-
+    // installs the mod to the ModFolder directory. see the launching logic further down for how doorstop is used
     private async Task InstallMod()
     {
         Utilities.KillAmongUs();
         
-        await InstallZip("BepInEx.zip", Constants.CachedBepInEx, Config.ModPackData.BepInEx);
-        await VerifyBepInEx();
-        
+        await InstallZip("BepInEx.zip", Constants.ModFolder, Config.ModPackData.BepInEx);
         await InstallPlugins(Constants.ModFolder);
         await InstallZip("ExtraData.zip", Constants.ModFolder, Config.ModPackData.ExtraData);
-        
-        // copy doorstop
-        CopyFromModToGame("winhttp.dll");
-        await SetDoorstopConfig();
     }
-
-    private void CopyFromModToGame(string path)
-    {
-        File.Copy(Path.Combine(Constants.ModFolder, path), Path.Combine(Config.AmongUsPath, path), true);
-    }
-
-    private async Task VerifyBepInEx()
-    {
-        if (_hashes is null)
-        {
-            await InstallZip("BepInEx.zip", Constants.ModFolder, Config.ModPackData.BepInEx);
-            return;
-        }
-        
-        float processed = 0;
-        var total = _hashes.Count;
-        foreach (var hashData in _hashes)
-        {
-            var gamePath = new FileInfo(Path.GetFullPath(hashData.RelativePath, Constants.ModFolder));
-            var gameHash = Utilities.FileToHash(gamePath.FullName);
-            if (!hashData.Hash.Equals(gameHash, StringComparison.OrdinalIgnoreCase))
-            {
-                Directory.CreateDirectory(gamePath.Directory!.FullName);
-                File.Copy(Path.GetFullPath(hashData.RelativePath, Constants.CachedBepInEx), gamePath.FullName, true);
-            }
-
-            Dispatcher.UIThread.Invoke(() => UpdateProgress((int)(100 * (processed++ / total))));
-        }
-    }
-    
     
     private async Task InstallZip(string name, string directory, ModPackData.ZipData zipData)
     {
@@ -306,7 +243,6 @@ public partial class MainWindow : Window
         
         ProgressBar.ProgressTextFormat = $"Installed {name}";
     }
-    
     
     private async Task InstallPlugins(string directory)
     {
@@ -333,7 +269,7 @@ public partial class MainWindow : Window
     {
         switch (ButtonState)
         {
-            case ButtonState.Refresh: 
+            case ButtonState.Refresh:
                 InfoIcon.IsVisible = true;
                 InfoText.Foreground = Brush.Parse("#FFBB00");
                 InfoText.Text = "";
@@ -344,15 +280,19 @@ public partial class MainWindow : Window
                 
             case ButtonState.Running:
             case ButtonState.Loading:
+                InstallButton.IsEnabled = false;
                 SetInfoToPath();
                 break;
+            
             case ButtonState.Install:
                 InstallButton.IsEnabled = true;
                 SetInfoToPath();
                 break;
+            
             case ButtonState.Update:
             case ButtonState.Launch:
             default:
+                InstallButton.IsEnabled = true;
                 SetInfoToPath();
                 break;
         }
@@ -368,11 +308,43 @@ public partial class MainWindow : Window
         InfoText.Text = Config.AmongUsPath;
     }
     
+
+    // create our own doorstop config
+    private async Task SetDoorstopConfig()
+    {
+        var targetAssembly = Path.GetFullPath("BepInEx/core/BepInEx.Unity.IL2CPP.dll", Constants.ModFolder);
+        var coreclrDir = Path.Combine(Constants.ModFolder, "dotnet");
+        var coreclrPath = Path.Combine(Constants.ModFolder, "dotnet", "coreclr.dll");
+
+        var rawCfg = $"""
+                      [General]
+                      enabled = true
+                      target_assembly = {targetAssembly}
+                      [Il2Cpp]
+                      coreclr_path = {coreclrPath}
+                      corlib_dir = {coreclrDir}
+                      """;
+        var existingCfg = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
+        var existingBak = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini.bak"));
+        if (existingCfg.Exists)
+        {
+            if (!existingBak.Exists)
+            {
+                Path.ChangeExtension(existingCfg.FullName, ".ini.bak");
+            }
+        }
+        
+        await File.WriteAllTextAsync(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"), rawCfg);
+    }
+
+    private void CopyFromModToGame(string path)
+    {
+        File.Copy(Path.Combine(Constants.ModFolder, path), Path.Combine(Config.AmongUsPath, path), true);
+    }
+    
     private async Task Launch()
     {
         Utilities.KillAmongUs();
-        
-        await VerifyBepInEx();
         
         // copy doorstop and set config
         CopyFromModToGame("winhttp.dll");
@@ -384,87 +356,19 @@ public partial class MainWindow : Window
         var cheater = new FileInfo(Path.GetFullPath("version.dll", Config.AmongUsPath));
         if (cheater.Exists)
         {
-            Path.ChangeExtension(cheater.FullName, ".dll.naughtynaughty");
+            cheater.MoveTo(Path.ChangeExtension(cheater.FullName, ".dll.nuhuh"));
         }
 
         var platform = AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData.SteamHash);
 
-        switch (platform)
+        if (platform is null)
         {
-            case AmongUsPlatform.Steam:
-                SteamLaunch();
-                break;
-            case AmongUsPlatform.Itch:
-                NormalLaunch();
-                break;
-            case AmongUsPlatform.Epic:
-                EpicLaunch();
-                break;
-            case null:
-                LoadAmongUsPath();
-                break;
-            default:
-                NormalLaunch();
-                break;
-        }
-    }
-
-    private void NormalLaunch()
-    {
-        var psi = new ProcessStartInfo(Path.Combine(Config.AmongUsPath, "Among Us.exe"));
-        
-        var process = Process.Start(psi);
-        if (process is null)
-        {
+            LoadAmongUsPath();
             return;
         }
-        
-        process.EnableRaisingEvents = true;
-        process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(AmongUsOnExit);
-    }
 
-    private void SteamLaunch()
-    {
-        var psi = new ProcessStartInfo($"steam://run/945360")
-        {
-            UseShellExecute = true
-        };
-        
-        Process.Start(psi);
-        Task.Run(WaitForAmongUs);
-    }
-
-    private void EpicLaunch()
-    {
-        var psi = new ProcessStartInfo(
-            "com.epicgames.launcher://apps/33956bcb55d4452d8c47e16b94e294bd%3A729a86a5146640a2ace9e8c595414c56%3A963137e4c29d4c79a81323b8fab03a40?action=launch&silent=true")
-        {
-            UseShellExecute = true
-        };
-        
-        Process.Start(psi);
-        Task.Run(WaitForAmongUs);
-    }
-
-    private async Task WaitForAmongUs()
-    {
-        for (var i = 0; i < 60; i++)
-        {
-            await Task.Delay(500);
-
-            var processes = Process.GetProcessesByName("Among Us");
-            if (processes.Length <= 0)
-            {
-                continue;
-            }
-            
-            var process = processes[0];
-            process.EnableRaisingEvents = true;
-            process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(AmongUsOnExit);
-            return;
-        }
-        
-        AmongUsOnExit();
+        var launcher = new AmongUsLauncher(Config.AmongUsPath, platform.Value, AmongUsOnExit);
+        launcher.Launch();
     }
     
     private void AmongUsOnExit()
@@ -476,9 +380,31 @@ public partial class MainWindow : Window
         Show();
         
         ButtonState = ButtonState.Loading;
+        Uninstall();
+    }
+    
+    private void Uninstall()
+    {
+        var doorstopBackup = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini.bak"));
+        if (doorstopBackup.Exists)
+        {
+            doorstopBackup.MoveTo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
+        }
+        else
+        {
+            foreach (var file in Constants.UninstallPaths)
+            {
+                var info = new FileInfo(Path.Combine(Config.AmongUsPath, file));
+                if (info.Exists)
+                {
+                    info.Delete();
+                }
+            }
+        }
+
         LoadAmongUsPath();
     }
-
+    
     private async void OpenDirectoryPicker(object? _, RoutedEventArgs e)
     {
         if (ButtonState is ButtonState.Loading or ButtonState.Running)
