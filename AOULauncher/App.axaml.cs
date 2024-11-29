@@ -1,7 +1,9 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using AOULauncher.Enum;
+using AOULauncher.LauncherStates;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -29,7 +31,7 @@ public partial class App : Application
             
                 window.Closing += (_, args) =>
                 {
-                    args.Cancel = window.ButtonState == ButtonState.Running;
+                    args.Cancel = window.LauncherState is RunningState;
                     if (!args.Cancel)
                     {
                         File.WriteAllText(Constants.ConfigPath, JsonSerializer.Serialize(window.Config, LauncherConfigContext.Default.LauncherConfig));
@@ -40,6 +42,8 @@ public partial class App : Application
             {
                 var window = new Error(e.ToString());
                 desktop.MainWindow = window;
+                window.Show();
+                window.Activate();
             }
         }
 

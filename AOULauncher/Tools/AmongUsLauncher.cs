@@ -7,22 +7,11 @@ using Avalonia.Threading;
 
 namespace AOULauncher.Tools;
 
-public class AmongUsLauncher
+public class AmongUsLauncher(string amongUsPath, AmongUsPlatform platform, Action onExitCallback)
 {
-    private readonly string _amongUsPath;
-    private readonly AmongUsPlatform _platform;
-    private readonly Action _onExitCallback;
-    
-    public AmongUsLauncher(string amongUsPath, AmongUsPlatform platform, Action onExitCallback)
-    {
-        _amongUsPath = amongUsPath;
-        _platform = platform;
-        _onExitCallback = onExitCallback;
-    }
-
     public void Launch()
     {
-        switch (_platform)
+        switch (platform)
         {
             case AmongUsPlatform.Steam:
                 SteamLaunch();
@@ -42,7 +31,7 @@ public class AmongUsLauncher
 
     private void NormalLaunch()
     {
-        var psi = new ProcessStartInfo(Path.Combine(_amongUsPath, "Among Us.exe"));
+        var psi = new ProcessStartInfo(Path.Combine(amongUsPath, "Among Us.exe"));
         
         var process = Process.Start(psi);
         if (process is null)
@@ -51,7 +40,7 @@ public class AmongUsLauncher
         }
         
         process.EnableRaisingEvents = true;
-        process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(_onExitCallback);
+        process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(onExitCallback);
     }
 
     private void SteamLaunch()
@@ -91,10 +80,10 @@ public class AmongUsLauncher
             
             var process = processes[0];
             process.EnableRaisingEvents = true;
-            process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(_onExitCallback);
+            process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(onExitCallback);
             return;
         }
         
-        _onExitCallback();
+        onExitCallback();
     }
 }

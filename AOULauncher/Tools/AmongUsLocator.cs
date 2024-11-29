@@ -9,7 +9,7 @@ namespace AOULauncher.Tools;
 
 public static class AmongUsLocator
 {
-    public const string EosDllRelativePath = "Among Us_Data/Plugins/x86/GfxPluginEGS.dll";
+    private const string EosDllRelativePath = "Among Us_Data/Plugins/x86/GfxPluginEGS.dll";
     
     public static AmongUsPlatform? GetPlatform(string path, string steamHash)
     {

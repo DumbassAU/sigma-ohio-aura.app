@@ -1,5 +1,7 @@
 ﻿using Avalonia;
 using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace AOULauncher;
 
@@ -11,7 +13,21 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        TaskScheduler.UnobservedTaskException += ExceptionHandler;
+
+        try
+        {
+            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception e)
+        {
+            File.AppendAllText("ErrorLog.txt", $"[{DateTime.Now}] {e}");
+        }
+    }
+
+    private static void ExceptionHandler(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        File.AppendAllText("ErrorLog.txt", $"[{DateTime.Now}] {e.Exception.Message}");
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
