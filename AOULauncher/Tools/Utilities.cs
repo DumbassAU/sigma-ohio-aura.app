@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -9,7 +10,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
-using Ionic.Zip;
 
 namespace AOULauncher.Tools;
 
@@ -88,7 +88,7 @@ internal static class Utilities {
         await stream.CopyToAsync(destination);
     }
     
-    public static async Task<ZipFile> DownloadZip(this HttpClient httpClient, string name, string directory, ModPackData.ZipData zipData)
+    public static async Task<ZipArchive> DownloadZip(this HttpClient httpClient, string name, string directory, ModPackData.ZipData zipData)
     {
         Directory.CreateDirectory(directory);
         
@@ -99,7 +99,7 @@ internal static class Utilities {
             await httpClient.DownloadFile(name, directory, zipData.Link);
         }
 
-        return ZipFile.Read(file.FullName);
+        return ZipFile.OpenRead(file.FullName);
     }
     
     public static string FileToHash(string path)

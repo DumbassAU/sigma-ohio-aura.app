@@ -1,9 +1,8 @@
 ﻿using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using AOULauncher.Tools;
 using AOULauncher.Views;
-using Avalonia.Media;
-using Ionic.Zip;
 
 namespace AOULauncher.LauncherStates;
 
@@ -38,15 +37,7 @@ public class InstallState(MainWindow window) : AbstractLauncherState(window)
         var zipFile = await Window.HttpClient.DownloadZip(name, Constants.DataLocation, zipData);
         
         Window.ProgressBar.ProgressTextFormat = $"Installing {name}";
- 
-        zipFile.ExtractProgress += (_, args) =>
-        {
-            if (args.EntriesTotal != 0)
-            {
-                Window.ProgressBar.Value = 100 * ((float)args.EntriesExtracted / args.EntriesTotal);
-            }
-        };
-        zipFile.ExtractAll(directory, ExtractExistingFileAction.OverwriteSilently);
+        zipFile.ExtractToDirectory(directory, true);
         
         Window.ProgressBar.ProgressTextFormat = $"Installed {name}";
     }

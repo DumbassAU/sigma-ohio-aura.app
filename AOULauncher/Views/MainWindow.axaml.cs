@@ -6,11 +6,9 @@ using System.Net.Http.Handlers;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using AOULauncher.Enum;
 using AOULauncher.LauncherStates;
 using AOULauncher.Tools;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -120,6 +118,7 @@ public partial class MainWindow : Window
     
     public void LoadAmongUsPath()
     {
+        Console.Out.WriteLine("Loading Among Us Path");
         ProgressBar.Value = 0;
         ProgressBar.ProgressTextFormat = "Loading...";
         
@@ -206,13 +205,23 @@ public partial class MainWindow : Window
     
     private void Uninstall()
     {
+        Console.Out.WriteLine("Uninstalling");
+
         var doorstopBackup = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini.bak"));
         if (doorstopBackup.Exists)
         {
+            Console.Out.WriteLine("Restoring doorstop config");
+            var doorstopConfig = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
+            if (doorstopConfig.Exists)
+            {
+                doorstopConfig.Delete();
+            }
+            
             doorstopBackup.MoveTo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
         }
         else
         {
+            Console.Out.WriteLine("No doorstop config backup found, uninstalling completely");
             foreach (var file in Constants.UninstallPaths)
             {
                 var info = new FileInfo(Path.Combine(Config.AmongUsPath, file));
@@ -223,6 +232,7 @@ public partial class MainWindow : Window
             }
         }
 
+        Console.Out.WriteLine("Uninstall complete, reloading AU path");
         LoadAmongUsPath();
     }
     
