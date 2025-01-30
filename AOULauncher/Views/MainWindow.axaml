@@ -44,6 +44,28 @@
             
             <StackPanel DockPanel.Dock="Bottom">
                 
+                <TextBlock 
+                    Name="LaunchWarning"
+                    IsVisible="False"
+                    Margin="0,10,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="20"
+                    Opacity=".9"
+                    Padding="0" 
+                    Background="Transparent"
+                    Foreground="#FFBB00"
+                    FontWeight="300"
+                    TextAlignment="Center">
+                    Launching with mods takes time!
+                    <LineBreak/>
+                    Please be patient.
+                    <TextBlock.Effect>
+                        <DropShadowDirectionEffect 
+                            BlurRadius="15" 
+                            ShadowDepth="0"/>
+                    </TextBlock.Effect>
+                </TextBlock>
+                
                 <Button Background="#333"
                         IsEnabled="False"
                         Name="InstallButton"

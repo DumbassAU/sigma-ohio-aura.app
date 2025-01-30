@@ -6,6 +6,7 @@ using System.Net.Http.Handlers;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using AOULauncher.Enum;
 using AOULauncher.LauncherStates;
 using AOULauncher.Tools;
 using Avalonia.Controls;
@@ -193,6 +194,7 @@ public partial class MainWindow : Window
     
     public void AmongUsOnExit()
     {
+        LaunchWarning.IsVisible = false;
         WindowState = WindowState.Normal;
         Topmost = true;
         Topmost = false;
@@ -207,27 +209,31 @@ public partial class MainWindow : Window
     {
         Console.Out.WriteLine("Uninstalling");
 
-        var doorstopBackup = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini.bak"));
-        if (doorstopBackup.Exists)
+        // we manipulate the doorstop config for epic and steam, so we need to restore it
+        if (AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData.SteamHash) is AmongUsPlatform.Epic or AmongUsPlatform.Steam)
         {
-            Console.Out.WriteLine("Restoring doorstop config");
-            var doorstopConfig = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
-            if (doorstopConfig.Exists)
+            var doorstopBackup = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini.bak"));
+            if (doorstopBackup.Exists)
             {
-                doorstopConfig.Delete();
-            }
-            
-            doorstopBackup.MoveTo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
-        }
-        else
-        {
-            Console.Out.WriteLine("No doorstop config backup found, uninstalling completely");
-            foreach (var file in Constants.UninstallPaths)
-            {
-                var info = new FileInfo(Path.Combine(Config.AmongUsPath, file));
-                if (info.Exists)
+                Console.Out.WriteLine("Restoring doorstop config");
+                var doorstopConfig = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
+                if (doorstopConfig.Exists)
                 {
-                    info.Delete();
+                    doorstopConfig.Delete();
+                }
+
+                doorstopBackup.MoveTo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini"));
+            }
+            else
+            {
+                Console.Out.WriteLine("No doorstop config backup found, uninstalling completely");
+                foreach (var file in Constants.UninstallPaths)
+                {
+                    var info = new FileInfo(Path.Combine(Config.AmongUsPath, file));
+                    if (info.Exists)
+                    {
+                        info.Delete();
+                    }
                 }
             }
         }

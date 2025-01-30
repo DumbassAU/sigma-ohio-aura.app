@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using AOULauncher.Enum;
 using AOULauncher.Tools;
 using AOULauncher.Views;
 
@@ -11,9 +12,8 @@ public class LaunchState(MainWindow window) : AbstractLauncherState(window)
     {
         Utilities.KillAmongUs();
         
-        // copy doorstop and set config
+        // copy doorstop
         CopyFromModToGame("winhttp.dll");
-        await SetDoorstopConfig();
 
         Window.LauncherState = new RunningState(Window);
 
@@ -31,8 +31,27 @@ public class LaunchState(MainWindow window) : AbstractLauncherState(window)
             return;
         }
 
-        var launcher = new AmongUsLauncher(Config.AmongUsPath, platform.Value, Window.AmongUsOnExit);
+        // necessary for epic because it doesn't have a URI to launch with arguments
+        // steam does, but it puts up a warning, so we just bypass by using doorstop config
+        if (platform is AmongUsPlatform.Epic or AmongUsPlatform.Steam)
+        {
+            await SetDoorstopConfig();
+        }
+
+        var targetAssembly = Path.Combine(Constants.ModFolder, "BepInEx", "core", "BepInEx.Unity.IL2CPP.dll");
+        var coreclrDir = Path.Combine(Constants.ModFolder, "dotnet");
+        var coreclrPath = Path.Combine(Constants.ModFolder, "dotnet", "coreclr.dll");
+
+        string[] arguments = [
+            "--doorstop-enabled true", 
+            $"--doorstop-target-assembly \"{targetAssembly}\"",
+            $"--doorstop-clr-corlib-dir \"{coreclrDir}\"",
+            $"--doorstop-clr-runtime-coreclr-path \"{coreclrPath}\""
+        ];
+
+        var launcher = new AmongUsLauncher(Config.AmongUsPath, platform.Value, Window.AmongUsOnExit, arguments);
         launcher.Launch();
+        window.LaunchWarning.IsVisible = true;
     }
 
     public override void EnterState()

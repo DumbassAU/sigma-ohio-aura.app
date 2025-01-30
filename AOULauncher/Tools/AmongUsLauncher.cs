@@ -7,31 +7,33 @@ using Avalonia.Threading;
 
 namespace AOULauncher.Tools;
 
-public class AmongUsLauncher(string amongUsPath, AmongUsPlatform platform, Action onExitCallback)
+public class AmongUsLauncher(string amongUsPath, AmongUsPlatform platform, Action onExitCallback, params string[] args)
 {
     public void Launch()
     {
         switch (platform)
         {
             case AmongUsPlatform.Steam:
-                SteamLaunch();
+                IndirectLaunch("steam://run/945360/");
                 break;
             case AmongUsPlatform.Itch:
                 NormalLaunch();
                 break;
             case AmongUsPlatform.Epic:
-                EpicLaunch();
+                IndirectLaunch("com.epicgames.launcher://apps/33956bcb55d4452d8c47e16b94e294bd%3A729a86a5146640a2ace9e8c595414c56%3A963137e4c29d4c79a81323b8fab03a40?action=launch&silent=true");
                 break;
             default:
                 NormalLaunch();
                 break;
         }
     }
-    
 
     private void NormalLaunch()
     {
-        var psi = new ProcessStartInfo(Path.Combine(amongUsPath, "Among Us.exe"));
+        var psi = new ProcessStartInfo(Path.Combine(amongUsPath, "Among Us.exe"))
+        {
+            Arguments = string.Join(" ", args)
+        };
         
         var process = Process.Start(psi);
         if (process is null)
@@ -43,21 +45,9 @@ public class AmongUsLauncher(string amongUsPath, AmongUsPlatform platform, Actio
         process.Exited += (_, _) => Dispatcher.UIThread.InvokeAsync(onExitCallback);
     }
 
-    private void SteamLaunch()
+    private void IndirectLaunch(string path)
     {
-        var psi = new ProcessStartInfo($"steam://run/945360")
-        {
-            UseShellExecute = true
-        };
-        
-        Process.Start(psi);
-        Task.Run(WaitForAmongUs);
-    }
-
-    private void EpicLaunch()
-    {
-        var psi = new ProcessStartInfo(
-            "com.epicgames.launcher://apps/33956bcb55d4452d8c47e16b94e294bd%3A729a86a5146640a2ace9e8c595414c56%3A963137e4c29d4c79a81323b8fab03a40?action=launch&silent=true")
+        var psi = new ProcessStartInfo(path)
         {
             UseShellExecute = true
         };
