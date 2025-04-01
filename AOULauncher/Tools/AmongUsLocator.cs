@@ -9,18 +9,11 @@ namespace AOULauncher.Tools;
 
 public static class AmongUsLocator
 {
-    private const string EosDllRelativePath = "Among Us_Data/Plugins/x86/GfxPluginEGS.dll";
-    
-    public static AmongUsPlatform? GetPlatform(string path, string steamHash)
+    public static AmongUsPlatform? GetPlatform(string path, ModPackData modPackData)
     {
         if (!VerifyAmongUsDirectory(path))
         {
             return null;
-        }
-
-        if (File.Exists(Path.GetFullPath(EosDllRelativePath, path)))
-        {
-            return AmongUsPlatform.Epic;
         }
 
         var globalGameFile = new FileInfo(Path.Combine(path, "Among Us_Data", "globalgamemanagers"));
@@ -31,8 +24,18 @@ public static class AmongUsLocator
         }
         
         var hash = Utilities.FileToHash(globalGameFile.FullName);
+        var platform = AmongUsPlatform.Unknown;
+        for (var i = 0; i < modPackData.PlatformHashes.Length; i++)
+        {
+            var pHash = modPackData.PlatformHashes[i];
+            if (pHash == hash)
+            {
+                platform = (AmongUsPlatform)i;
+                break;
+            }
+        }
 
-        return hash == steamHash ? AmongUsPlatform.Steam : AmongUsPlatform.Itch;
+        return platform;
     }
     
     
@@ -53,8 +56,7 @@ public static class AmongUsLocator
         
         return VerifyAmongUsDirectory(path) ? path : null;
     }
-    
-    
+
     // Finds among us from registry location
     private static string? UpdatePathFromRegistry()
     {
@@ -74,8 +76,7 @@ public static class AmongUsLocator
         return path.Substring(1,Math.Max(indexOfExe - 1,0));
 
     }
-    
-    
+
     public static bool VerifyAmongUsDirectory(string? path)
     {
         return path is not null && Directory.Exists(path) && File.Exists(Path.Combine(path, "Among Us.exe"));

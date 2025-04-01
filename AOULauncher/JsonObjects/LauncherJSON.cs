@@ -20,9 +20,9 @@ public struct ModPackData()
 
     public ZipData ExtraData { get; set; } = default;
 
-    public ModInfo[] ModList { get; set; } = [];
+    public string[] PlatformHashes { get; set; } = [];
 
-    public string SteamHash { get; set; } = "";
+    public ModInfo[] ModList { get; set; } = [];
 
     public struct ZipData()
     {

@@ -14,7 +14,8 @@ public class AmongUsLauncher(string amongUsPath, AmongUsPlatform platform, Actio
         switch (platform)
         {
             case AmongUsPlatform.Steam:
-                IndirectLaunch("steam://run/945360/");
+                NormalLaunch();
+                //IndirectLaunch("steam://run/945360/");
                 break;
             case AmongUsPlatform.Itch:
                 NormalLaunch();

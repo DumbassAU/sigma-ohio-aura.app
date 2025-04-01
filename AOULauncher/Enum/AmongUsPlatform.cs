@@ -4,5 +4,7 @@ public enum AmongUsPlatform
 {
     Steam,
     Itch,
-    Epic
+    Epic,
+    Microsoft,
+    Unknown,
 }

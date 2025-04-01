@@ -136,6 +136,11 @@ public partial class MainWindow : Window
                 return;
             }
         }
+
+        if (AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData) is AmongUsPlatform.Unknown)
+        { 
+            SetLaunchWarning("Unknown platform/game version detected!\nYou may be running an incompatible version of Among Us.");
+        }
        
         ProgressBar.ProgressTextFormat = "";
 
@@ -191,7 +196,19 @@ public partial class MainWindow : Window
         InfoText.Foreground = Brush.Parse("#555");
         InfoText.Text = Config.AmongUsPath;
     }
-    
+
+    public void ResetLaunchWarning()
+    {
+        LaunchWarning.Text = "Launching with mods takes time!\nPlease be patient.";
+        LaunchWarning.IsVisible = false;
+    }
+
+    public void SetLaunchWarning(string text)
+    {
+        LaunchWarning.Text = text;
+        LaunchWarning.IsVisible = true;
+    }
+
     public void AmongUsOnExit()
     {
         LaunchWarning.IsVisible = false;
@@ -210,7 +227,7 @@ public partial class MainWindow : Window
         Console.Out.WriteLine("Uninstalling");
 
         // we manipulate the doorstop config for epic and steam, so we need to restore it
-        if (AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData.SteamHash) is AmongUsPlatform.Epic or AmongUsPlatform.Steam)
+        if (AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData) is AmongUsPlatform.Epic or AmongUsPlatform.Steam)
         {
             var doorstopBackup = new FileInfo(Path.Combine(Config.AmongUsPath, "doorstop_config.ini.bak"));
             if (doorstopBackup.Exists)

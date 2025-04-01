@@ -23,7 +23,7 @@ public class LaunchState(MainWindow window) : AbstractLauncherState(window)
             cheater.MoveTo(Path.ChangeExtension(cheater.FullName, ".dll.no"));
         }
 
-        var platform = AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData.SteamHash);
+        var platform = AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData);
 
         if (platform is null)
         {

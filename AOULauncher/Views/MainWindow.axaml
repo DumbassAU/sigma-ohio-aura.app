@@ -112,10 +112,8 @@
                             </TextBlock>
                         </StackPanel>
                     </Button>
-                    
                 </Panel>
-                
-                
+
                 <ProgressBar Name="ProgressBar"
                              ShowProgressText="True"
                              ProgressTextFormat="Loading..."
