@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.IO.Compression;
 using System.Threading.Tasks;
 using AOULauncher.Enum;
 using AOULauncher.Tools;
@@ -11,7 +12,19 @@ public class LaunchState(MainWindow window) : AbstractLauncherState(window)
     public override async Task ButtonClick()
     {
         Utilities.KillAmongUs();
-        
+
+        // make sure bepinex is set to match platform:
+        ZipArchive zipFile;
+        if (Window.Config.Platform is AmongUsPlatform.Microsoft)
+        {
+            zipFile = await Window.HttpClient.DownloadZip("BepInEx64.zip", Constants.DataLocation, Window.Config.ModPackData.BepInEx64);
+        }
+        else
+        {
+            zipFile = await Window.HttpClient.DownloadZip("BepInEx32.zip", Constants.DataLocation, Window.Config.ModPackData.BepInEx);
+        }
+        zipFile.ExtractToDirectory(Constants.ModFolder, true);
+ 
         // copy doorstop
         CopyFromModToGame("winhttp.dll");
 
