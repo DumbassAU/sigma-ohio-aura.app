@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
+using AOULauncher.Enum;
 using AOULauncher.Tools;
 using AOULauncher.Views;
 
@@ -26,8 +27,15 @@ public class InstallState(MainWindow window) : AbstractLauncherState(window)
     private async Task InstallMod()
     {
         Utilities.KillAmongUs();
-        
-        await InstallZip("BepInEx.zip", Constants.ModFolder, Config.ModPackData.BepInEx);
+
+        if (AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData) is AmongUsPlatform.Microsoft)
+        {
+            await InstallZip("BepInEx.zip", Constants.ModFolder, Config.ModPackData.BepInEx64);
+        }
+        else
+        {
+            await InstallZip("BepInEx.zip", Constants.ModFolder, Config.ModPackData.BepInEx);
+        }
         await InstallPlugins(Constants.ModFolder);
         await InstallZip("ExtraData.zip", Constants.ModFolder, Config.ModPackData.ExtraData);
     }

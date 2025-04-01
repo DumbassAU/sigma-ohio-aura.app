@@ -6,7 +6,7 @@ namespace AOULauncher;
 public struct LauncherConfig()
 {
     public string AmongUsPath { get; set; } = "";
-    public AmongUsPlatform Platform { get; set; } = AmongUsPlatform.Steam;
+    public AmongUsPlatform Platform { get; set; } = AmongUsPlatform.Unknown;
     public ModPackData ModPackData { get; set; } = default;
 }
 
@@ -17,6 +17,8 @@ public struct ModPackData()
     public string LauncherUpdateLink { get; set; } = "";
     
     public ZipData BepInEx { get; set; } = default;
+
+    public ZipData BepInEx64 { get; set; } = default;
 
     public ZipData ExtraData { get; set; } = default;
 
