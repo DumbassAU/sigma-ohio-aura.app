@@ -28,7 +28,7 @@ public class InstallState(MainWindow window) : AbstractLauncherState(window)
     {
         Utilities.KillAmongUs();
 
-        if (AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData) is AmongUsPlatform.Microsoft)
+        if (Config.Platform is AmongUsPlatform.Microsoft)
         {
             await InstallZip("BepInEx64.zip", Constants.ModFolder, Config.ModPackData.BepInEx64);
         }

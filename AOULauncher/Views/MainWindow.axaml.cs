@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Handlers;
 using System.Reflection;
@@ -65,9 +66,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            Config.ModPackData =
-                await HttpClient.DownloadJson(Constants.ApiLocation, LauncherConfigContext.Default.ModPackData);
-            //await CheckLauncherUpdate();
+            Config.ModPackData = await HttpClient.DownloadJson(Constants.ApiLocation, LauncherConfigContext.Default.ModPackData);
+            await CheckLauncherUpdate();
             await Dispatcher.UIThread.InvokeAsync(LoadAmongUsPath);
         }
         catch (Exception e)
@@ -111,7 +111,9 @@ public partial class MainWindow : Window
 
         file.MoveTo(file.FullName+".old", true);
 
-        await HttpClient.DownloadFile("AOULauncher.exe", AppContext.BaseDirectory, Config.ModPackData.LauncherUpdateLink);
+        await HttpClient.DownloadFile("AOULauncher.zip", AppContext.BaseDirectory, Config.ModPackData.LauncherUpdateLink);
+        var zipFile = ZipFile.OpenRead("AOULauncher.zip");
+        zipFile.ExtractToDirectory(AppContext.BaseDirectory, true);
 
         Process.Start(Path.Combine(AppContext.BaseDirectory, "AOULauncher.exe"));
         Process.GetCurrentProcess().Kill();
