@@ -67,7 +67,7 @@ public partial class MainWindow : Window
         {
             Config.ModPackData =
                 await HttpClient.DownloadJson(Constants.ApiLocation, LauncherConfigContext.Default.ModPackData);
-            await CheckLauncherUpdate();
+            //await CheckLauncherUpdate();
             await Dispatcher.UIThread.InvokeAsync(LoadAmongUsPath);
         }
         catch (Exception e)
