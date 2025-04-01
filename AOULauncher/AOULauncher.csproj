@@ -3,13 +3,20 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <PublishAot>true</PublishAot>
+        <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+        <TrimMode>link</TrimMode>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <ApplicationIcon>Assets/launchpad.ico</ApplicationIcon>
         <LangVersion>latest</LangVersion>
         <Version>0.2.2</Version>
     </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Preserve Avalonia types for reflection -->
+        <TrimmerRootAssembly Include="Avalonia.Themes.Fluent" />
+    </ItemGroup>
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**"/>

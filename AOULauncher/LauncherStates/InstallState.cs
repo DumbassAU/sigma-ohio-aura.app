@@ -30,11 +30,11 @@ public class InstallState(MainWindow window) : AbstractLauncherState(window)
 
         if (AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData) is AmongUsPlatform.Microsoft)
         {
-            await InstallZip("BepInEx.zip", Constants.ModFolder, Config.ModPackData.BepInEx64);
+            await InstallZip("BepInEx64.zip", Constants.ModFolder, Config.ModPackData.BepInEx64);
         }
         else
         {
-            await InstallZip("BepInEx.zip", Constants.ModFolder, Config.ModPackData.BepInEx);
+            await InstallZip("BepInEx32.zip", Constants.ModFolder, Config.ModPackData.BepInEx);
         }
         await InstallPlugins(Constants.ModFolder);
         await InstallZip("ExtraData.zip", Constants.ModFolder, Config.ModPackData.ExtraData);

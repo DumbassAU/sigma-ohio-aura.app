@@ -137,9 +137,14 @@ public partial class MainWindow : Window
             }
         }
 
-        if (AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData) is AmongUsPlatform.Unknown)
+        Config.Platform = AmongUsLocator.GetPlatform(Config.AmongUsPath, Config.ModPackData) ?? AmongUsPlatform.Unknown;
+        if (Config.Platform is AmongUsPlatform.Unknown)
         { 
             SetLaunchWarning("Unknown platform/game version detected!\nYou may be running an incompatible version of Among Us.");
+        }
+        else
+        {
+            ResetLaunchWarning();
         }
        
         ProgressBar.ProgressTextFormat = "";
@@ -194,7 +199,7 @@ public partial class MainWindow : Window
     {
         InfoIcon.IsVisible = false;
         InfoText.Foreground = Brush.Parse("#555");
-        InfoText.Text = Config.AmongUsPath;
+        InfoText.Text = $"Platform: {Config.Platform}\n{Config.AmongUsPath}";
     }
 
     public void ResetLaunchWarning()

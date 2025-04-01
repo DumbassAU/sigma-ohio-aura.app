@@ -51,7 +51,7 @@ public class LaunchState(MainWindow window) : AbstractLauncherState(window)
 
         var launcher = new AmongUsLauncher(Config.AmongUsPath, platform.Value, Window.AmongUsOnExit, arguments);
         launcher.Launch();
-        window.LaunchWarning.IsVisible = true;
+        Window.LaunchWarning.IsVisible = true;
     }
 
     public override void EnterState()
