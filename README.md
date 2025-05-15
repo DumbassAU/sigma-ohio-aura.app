@@ -8,7 +8,7 @@ Supports the following platforms:
 - [x] Steam
 - [x] Itch.io
 - [x] Epic Games
+- [x] Microsoft Store (may need additional testing) 
 
 Untested platforms:
-- [ ] Microsoft Store (theoretically supported)
 - [ ] Linux (might work with WINE)
