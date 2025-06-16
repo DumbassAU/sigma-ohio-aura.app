@@ -8,6 +8,7 @@ Supports the following platforms:
 - [x] rizz.platform
 - [x] ohio.rizz.games
 - [x] ohio-games
+- [x] town of skibidi reworked edited enhanced II pro max
 - [x] ohio-sigma-ohio-store (may need additional testing) 
 
 Untested platforms:
