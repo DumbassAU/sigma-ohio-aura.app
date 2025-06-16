@@ -8,7 +8,7 @@ Supports the following platforms:
 - [x] rizz.platform
 - [x] ohio.rizz.games
 - [x] ohio-games
-- [x] ohio-sigma-ohio-stkre (may need additional testing) 
+- [x] ohio-sigma-ohio-store (may need additional testing) 
 
 Untested platforms:
 - [ ] sigma (might work with OHIO)
