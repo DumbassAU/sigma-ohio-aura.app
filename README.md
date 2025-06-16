@@ -1,14 +1,14 @@
-# AOULauncher
+# sigma ohio aura app
 
-Simple Among Us mod launcher for the Launchpad Reloaded modpack.
+Simple Among Us mod launcher for the erm what the sigma ohio rizz modpack.
 
-Automatically fetches modpack list from AOU's servers.
+Automatically fetches modpack list from ohio sigma's servers.
 
 Supports the following platforms:
-- [x] Steam
-- [x] Itch.io
-- [x] Epic Games
-- [x] Microsoft Store (may need additional testing) 
+- [x] rizz.platform
+- [x] ohio.rizz.games
+- [x] ohio-games
+- [x] ohio-sigma-ohio-stkre (may need additional testing) 
 
 Untested platforms:
-- [ ] Linux (might work with WINE)
+- [ ] sigma (might work with OHIO)
