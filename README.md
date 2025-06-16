@@ -11,4 +11,4 @@ Supports the following platforms:
 - [x] ohio-sigma-ohio-store (may need additional testing) 
 
 Untested platforms:
-- [📄] Job Application (might work with OHIO)
+- 📄 Job Application (might work with OHIO)
