@@ -12,4 +12,4 @@ Supports the following platforms:
 - [x] RealRizz
 
 Untested platforms:
-- [ ] sigma (might work with OHIO}
+- [ ] sigma (might work with OHIO)
