@@ -13,3 +13,4 @@ Supports the following platforms:
 
 Untested platforms:
 - [ ] sigma (might work with OHIO)
+- [ ] Ohio Sigma app
