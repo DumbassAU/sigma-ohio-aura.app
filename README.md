@@ -1,6 +1,6 @@
 # sigma ohio aura app
 
-Simple Among Us mod launcher for the Skibidi Town Of Launchpad.
+Simple Among Us mod launcher for the Skibidi Town Of Launchpad modpack.
 
 Automatically fetches modpack list from ohio sigma's servers.
 
